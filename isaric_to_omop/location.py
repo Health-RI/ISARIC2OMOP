@@ -1,5 +1,5 @@
 import pandas as pd
-from utils import increment_last_id
+from utils import prepare_autoincrement_index
 from typing import Dict
 
 from core.db_connector import PostgresController
@@ -106,10 +106,10 @@ def populate_location(location_df: pd.DataFrame, postgres: PostgresController) -
         location_ids_dict = {}
 
     if not insert_locations.empty:
-        increment_by_index = increment_last_id("location", "location_id", postgres)
-        insert_locations.index += increment_by_index
-        insert_locations.index.name = "location_id"
-        insert_locations.reset_index(drop=False, inplace=True)
+        insert_locations = prepare_autoincrement_index(df=insert_locations,
+                                                       table="location",
+                                                       index_name="location_id",
+                                                       postgres=postgres)
         postgres.df_to_postgres(table="location", df=insert_locations)
         location_ids_dict.update(pd.Series(insert_locations["location_id"].values,
                                            index=insert_locations["location_source_value"].astype(str)).to_dict())
@@ -128,3 +128,18 @@ def get_locations(postgres: PostgresController) -> Dict[str, int]:
     location_ids_dict = pd.Series(existing_locations["location_id"].values,
                                   index=existing_locations["location_source_value"].astype(str)).to_dict()
     return location_ids_dict
+
+
+def populate_care_site(df: pd.DataFrame, postgres: PostgresController) -> Dict[str, int]:
+    care_site = df.copy()[["location_id", "care_site_id"]].dropna(axis="rows").drop_duplicates()
+    # todo: can we get more data about care site from the source?
+    care_site.rename(columns={"care_site_id": "care_site_source_value"}, inplace=True)
+    # todo check existing in DB, there are no constraints
+    care_site = prepare_autoincrement_index(df=care_site,
+                                            table="care_site",
+                                            index_name="care_site_id",
+                                            postgres=postgres)
+    postgres.df_to_postgres(table="care_site", df=care_site)
+
+    care_sites = pd.Series(care_site["care_site_id"].values, index=care_site["care_site_source_value"]).to_dict()
+    return care_sites

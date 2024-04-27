@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from utils import increment_last_id
-from location import populate_location, get_locations
+from location import get_locations, populate_care_site
 from core.db_connector import PostgresController
 from typing import Dict
 
@@ -125,6 +125,7 @@ def prepare_person(df, postgres: PostgresController, location_ids_dict: Dict[str
     df = df.reindex(columns=header)
     df["year_of_birth"] = df["year_of_birth"].apply(lambda x: str(int(x)) if pd.notnull(x) else x)
     # in care site id values like 468-0053 - can not be ingested because OMOP expect int
-    df["care_site_id"] = df["care_site_id"].apply(lambda x: int(str(x).split("-")[0]) if pd.notnull(x) else x)
+    care_sites_dict = populate_care_site(df, postgres)
+    df["care_site_id"] = df["care_site_id"].apply(lambda x: care_sites_dict.get(str(x)) if pd.notnull(x) else x)
     postgres.df_to_postgres(table="person", df=df)
     return df
