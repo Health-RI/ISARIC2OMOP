@@ -69,7 +69,7 @@ def get_location_data(postgres: PostgresController) -> Dict[str, int]:
     return location_dict
 
 
-def populate_location(person_df: pd.DataFrame, postgres: PostgresController) -> pd.DataFrame:
+def populate_location(location_df: pd.DataFrame, postgres: PostgresController) -> Dict[str, int]:
     """
     Transformation rules are set as per https://omop-erd.surge.sh/omop_cdm/tables/LOCATION.html
     """
@@ -80,12 +80,11 @@ def populate_location(person_df: pd.DataFrame, postgres: PostgresController) -> 
                        "location_source_value", "country_concept_id", "country_source_value", "latitude",
                        "longitude"]
     # Prepare location data
-    location_df = person_df.loc[pd.notnull(person_df["country"])][["country"]].drop_duplicates()
     location_df.rename(columns={"country": "location_source_value"}, inplace=True)
     # Location.location_source_value
     # ETL Conventions: Put the verbatim value for the location here, as it shows up in the source.
     location_df["location_source_value"] = location_df["location_source_value"].apply(lambda x: str(int(x)))
-    # Location.country_source_value
+    # Location.country_source_value User Guidance: The name of the country.
     location_df["country_source_value"] = location_df["location_source_value"].apply(
         lambda x: ISARIC_COUNTRY_CODES[x] if pd.notnull(x) else x)
     location_df["country_concept_id"] = location_df["country_source_value"].apply(
@@ -94,17 +93,17 @@ def populate_location(person_df: pd.DataFrame, postgres: PostgresController) -> 
     # Select rows to insert if they are exact duplicates (excluding location_id)
     existing_locations = (postgres.postgres_fetch(query=f"SELECT * from {postgres.schema}.location",
                                                   column_names=location_header))
-    loc_id_dict = pd.Series(existing_locations["location_id"].values,
-                            index=existing_locations["location_source_value"].astype(str)).to_dict()
-
-    existing_locations = existing_locations.drop(columns=["location_id"])
     if not existing_locations.empty:
+        location_ids_dict = pd.Series(existing_locations["location_id"].values,
+                                      index=existing_locations["location_source_value"].astype(str)).to_dict()
+        existing_locations = existing_locations.drop(columns=["location_id"])
         insert_locations = pd.merge(left=location_df.drop(columns=["location_id"]).astype(existing_locations.dtypes),
                                     right=existing_locations,
                                     indicator=True,
                                     how='outer').query('_merge=="left_only"').drop('_merge', axis=1)
     else:
-        insert_locations = location_df
+        insert_locations = location_df.drop(columns=["location_id"])
+        location_ids_dict = {}
 
     if not insert_locations.empty:
         increment_by_index = increment_last_id("location", "location_id", postgres)
@@ -112,12 +111,10 @@ def populate_location(person_df: pd.DataFrame, postgres: PostgresController) -> 
         insert_locations.index.name = "location_id"
         insert_locations.reset_index(drop=False, inplace=True)
         postgres.df_to_postgres(table="location", df=insert_locations)
-        # loc_id_dict.update(pd.Series(insert_locations["location_id"].values,
-        #                              index=insert_locations["location_source_value"].astype(str)).to_dict())
+        location_ids_dict.update(pd.Series(insert_locations["location_id"].values,
+                                           index=insert_locations["location_source_value"].astype(str)).to_dict())
 
-    # person_df["location_id"] = person_df["country"].apply(
-    #     lambda x: dict_location.get(ISARIC_COUNTRY_CODES[str(int(x))]) if pd.notnull(x) else x)
-    return person_df
+    return location_ids_dict
 
 
 def get_locations(postgres: PostgresController) -> Dict[str, int]:
@@ -128,6 +125,6 @@ def get_locations(postgres: PostgresController) -> Dict[str, int]:
     existing_locations = (
         postgres.postgres_fetch(query=f"SELECT location_id, location_source_value from {postgres.schema}.location",
                                 column_names=["location_id", "location_source_value"]))
-    loc_id_dict = pd.Series(existing_locations["location_id"].values,
-                            index=existing_locations["location_source_value"].astype(str)).to_dict()
-    return loc_id_dict
+    location_ids_dict = pd.Series(existing_locations["location_id"].values,
+                                  index=existing_locations["location_source_value"].astype(str)).to_dict()
+    return location_ids_dict
