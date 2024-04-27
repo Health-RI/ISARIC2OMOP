@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 from utils import increment_last_id
 from location import get_locations, populate_care_site
@@ -124,6 +125,8 @@ def prepare_person(df, postgres: PostgresController, location_ids_dict: Dict[str
     df.reset_index(drop=False, inplace=True)
     df = df.reindex(columns=header)
     df["year_of_birth"] = df["year_of_birth"].apply(lambda x: str(int(x)) if pd.notnull(x) else x)
+    # No data for birthdate time, setting to 1st of June
+    df["birth_datetime"] = df["year_of_birth"].apply(lambda x: datetime(int(x), 6, 1, 0, 0, 0))
     # in care site id values like 468-0053 - can not be ingested because OMOP expect int
     care_sites_dict = populate_care_site(df, postgres)
     df["care_site_id"] = df["care_site_id"].apply(lambda x: care_sites_dict.get(str(x)) if pd.notnull(x) else x)
