@@ -27,7 +27,7 @@ class OMOPDrugs:
     Interferon_alpha = 4333650
     Interferon_beta = 46276542
     Neuraminidase_inhibitors = 4333524
-    
+
 
 class ISARICColumnsToOMOP:
     daily_invasive_prtrt = 44790095
@@ -72,7 +72,7 @@ def populate_icu_procedure(icu_visits, postgres):
 
 def populate_procedure(df, icu_visits, postgres):
     populate_icu_procedure(icu_visits, postgres)
-    
+
     procedure_columns = ["procedure_occurrence_id", "person_id", "procedure_concept_id", "procedure_date",
                          "procedure_datetime", "procedure_end_date", "procedure_end_datetime",
                          "procedure_type_concept_id", "modifier_concept_id", "quantity", "provider_id",
@@ -90,7 +90,7 @@ def populate_procedure(df, icu_visits, postgres):
                               "daily_prone_cmtrt", "oxygen_cmoccur", "noninvasive_proccur", "pronevent_prtrt",
                               "inhalednit_cmtrt", "tracheo_prtrt", "extracorp_prtrt", "rrt_prtrt", "other_cmyn",
                               "antiviral_cmyn", "antibiotic_cmyn", "corticost_cmyn", "antifung_cmyn"]
-    procedure_df = pd.melt(df,
+    procedure_df = pd.melt(procedure_df,
                            id_vars=["subjid", "person_id", "dsstdat", "hostdat"],
                            value_vars=yes_no_columns)
     procedure_df = procedure_df.loc[procedure_df["value"] == ISARICYesNo.yes]
