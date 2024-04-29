@@ -78,14 +78,14 @@ def populate_procedure(df, icu_visits, postgres):
                          "procedure_type_concept_id", "modifier_concept_id", "quantity", "provider_id",
                          "visit_occurrence_id", "visit_detail_id", "procedure_source_value",
                          "procedure_source_concept_id", "modifier_source_value"]
-    
+
     procedure_df = df.copy()[["subjid", "person_id", "daily_invasive_prtrt", "daily_inotrope_cmyn", "daily_neuro_cmtrt",
                               "daily_prone_cmtrt", "oxygen_cmoccur", "noninvasive_proccur", "pronevent_prtrt",
                               "inhalednit_cmtrt", "tracheo_prtrt", "extracorp_prtrt", "rrt_prtrt", "other_cmyn",
                               "antiviral_cmyn", "antibiotic_cmyn", "corticost_cmyn", "antifung_cmyn",
                               "dsstdat", "hostdat"]]
     # antiviral_cmtrt
-    
+
     yes_no_columns = ["daily_invasive_prtrt", "daily_inotrope_cmyn", "daily_neuro_cmtrt",
                               "daily_prone_cmtrt", "oxygen_cmoccur", "noninvasive_proccur", "pronevent_prtrt",
                               "inhalednit_cmtrt", "tracheo_prtrt", "extracorp_prtrt", "rrt_prtrt", "other_cmyn",
@@ -100,13 +100,16 @@ def populate_procedure(df, icu_visits, postgres):
     procedure_df["procedure_concept_id"] = procedure_df["variable"].apply(
         lambda x: getattr(ISARICColumnsToOMOP, x))
     procedure_df = procedure_df.loc[pd.notnull(procedure_df["procedure_concept_id"])]
+    if pd.isnull(procedure_df["procedure_date"]).any():
+        print("procedures with no dates will be excluded")
+        procedure_df = procedure_df.loc[pd.notnull(procedure_df["procedure_date"])]
     increment_by_index = increment_last_id("procedure_occurrence", "procedure_occurrence_id", postgres)
     procedure_df.index += increment_by_index
     procedure_df.index.name = "procedure_occurrence_id"
     procedure_df.reset_index(drop=False, inplace=True)
     procedure_df = procedure_df.reindex(columns=procedure_columns)
     postgres.df_to_postgres(table="procedure_occurrence", df=procedure_df)
-    
+
     print()
 
     pass
