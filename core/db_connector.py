@@ -10,10 +10,11 @@ logger = logging.getLogger(__name__)
 
 class PostgresController:
     """Class to manage DB connection"""
-    def __init__(self, db_name, postgres_connection, staging_schema, chunksize=None):
+    def __init__(self, db_name, postgres_connection, cdm_schema, vocab_schema, chunksize=None):
         self.db_name = db_name
         self.engine = create_engine("postgresql+psycopg2://" + postgres_connection)
-        self.schema = staging_schema
+        self.cdm_schema = cdm_schema
+        self.vocab_schema = vocab_schema
         self.chunksize = chunksize or None
         self.connect()
         self.metadata = MetaData(self.engine)
@@ -29,7 +30,7 @@ class PostgresController:
 
     def set_working_schema(self, schema: str):
         """Sets schema to work, by default it is the one passed in class constructor"""
-        self.schema = schema
+        self.cdm_schema = schema
 
     def postgres_fetch(self, query: str, column_names: List = None) -> pd.DataFrame:
         """fetches query result as pandas dataframe. If column are s"""
@@ -44,4 +45,4 @@ class PostgresController:
         :param table: str, target table name
         :param df: pd.DataFrame, data to save
         """
-        df.to_sql(table, schema=self.schema, con=self.engine, index=False, if_exists="append", chunksize=self.chunksize)
+        df.to_sql(table, schema=self.cdm_schema, con=self.engine, index=False, if_exists="append", chunksize=self.chunksize)

@@ -48,7 +48,8 @@ if __name__ == '__main__':
     path3 = "./NFU/data/Radboud/scrambled.csv"
     path4 = "./NFU/data/UMCG/scrambled.csv"
 
-    postgres = PostgresController(db_name=os.environ["OMOP_DB_NAME"],
+    postgres = PostgresController(db_name=os.environ["POSTGRES_DB"],
                                   postgres_connection=os.environ["OMOP_DB_CONNECT"],
-                                  staging_schema="omop")
+                                  cdm_schema=os.environ["CDM_SCHEMA"],
+                                  vocab_schema=os.environ["VOCAB_SCHEMA"])
     process_input(path4, postgres)

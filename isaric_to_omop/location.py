@@ -62,7 +62,7 @@ def get_location_data(postgres: PostgresController) -> Dict[str, int]:
     :param postgres: DB client
     :return: dictionary of concept_name (country) as a key and concept_id as value
     """
-    query = (f"SELECT * FROM {postgres.schema}.concept "
+    query = (f"SELECT * FROM {postgres.vocab_schema}.concept "
              f"WHERE domain_id = 'Geography' and standard_concept='S' and concept_class_id = 'Location';")
     result = postgres.postgres_fetch(query)
     location_dict = pd.Series(result["concept_id"].values, index=result["concept_name"]).to_dict()
@@ -91,7 +91,7 @@ def populate_location(location_df: pd.DataFrame, postgres: PostgresController) -
         lambda x: dict_location.get(x) if pd.notnull(x) else x)
     location_df = location_df.reindex(columns=location_header)
     # Select rows to insert if they are exact duplicates (excluding location_id)
-    existing_locations = (postgres.postgres_fetch(query=f"SELECT * from {postgres.schema}.location",
+    existing_locations = (postgres.postgres_fetch(query=f"SELECT * from {postgres.cdm_schema}.location",
                                                   column_names=location_header))
     if not existing_locations.empty:
         location_ids_dict = pd.Series(existing_locations["location_id"].values,
@@ -123,7 +123,7 @@ def get_locations(postgres: PostgresController) -> Dict[str, int]:
     :return: a dictionary with source (e.g. ISARIC) location value (as a string) as key and location id as a value
     """
     existing_locations = (
-        postgres.postgres_fetch(query=f"SELECT location_id, location_source_value from {postgres.schema}.location",
+        postgres.postgres_fetch(query=f"SELECT location_id, location_source_value from {postgres.cdm_schema}.location",
                                 column_names=["location_id", "location_source_value"]))
     location_ids_dict = pd.Series(existing_locations["location_id"].values,
                                   index=existing_locations["location_source_value"].astype(str)).to_dict()
