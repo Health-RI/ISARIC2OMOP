@@ -22,18 +22,21 @@ class ISARICEthnic:
 
 
 class OMOPEthnic:
+    """"Definition of Ethnicity concepts based on concept ID"""
     hispanic_or_latino = 38003563
     not_hispanic_or_latino = 38003564
-    ethnicity_not_stated = 37394011
+    # ethnicity_not_stated = 37394011 # non-standard depricated concept
 
 
 class OMOPRace:
+    """"Definition of Race concepts based on concept ID"""
     arab = 38003616
     black = 38003598
     asian = 8515
     white = 8527
-    other_race = 8522
-    unknown = 8552
+    native = 8557
+    # other_race = 8522 # non-standard depricated concept
+    # unknown = 8552 # non-standard depricated concept
 
 
 class ISARICAgeUnits:
@@ -41,18 +44,23 @@ class ISARICAgeUnits:
     months = 1
 
 
-def solve_original_ethnic(value, other_value):
-    ISARIC_ETHNIC = {1: "Arab", 2: "Black", 3: "East Asian", 4: "South Asian", 5: "West Asian", 6: "Latin American",
-                     7: "White", 8: "Aboriginal/First Nations", 9: "Other", 10: "N/A"}
+def map_omop_ethnicity(value):
+    isaric_values_to_omop_ethnicity_concept = {"Arab": OMOPEthnic.not_hispanic_or_latino,
+                                          "Black": OMOPEthnic.not_hispanic_or_latino,
+                                          "East Asian": OMOPEthnic.not_hispanic_or_latino,
+                                          "South Asian": OMOPEthnic.not_hispanic_or_latino,
+                                          "West Asian": OMOPEthnic.not_hispanic_or_latino,
+                                          "Latin American": OMOPEthnic.hispanic_or_latino,
+                                          "White": OMOPEthnic.not_hispanic_or_latino,
+                                          "Aboriginal/First Nations": OMOPEthnic.not_hispanic_or_latino,
+                                          "Other": 0,
+                                          "N/A": 0}
 
-    ethnic_value = None
-    if pd.notnull(value):
-        ethnic_value = ISARIC_ETHNIC.get(value)
-        if ethnic_value == "Other" and pd.notnull(other_value):
-            ethnic_value = other_value
-    if not ethnic_value:
-        ethnic_value = "N/A"
-    return ethnic_value
+    ethnic_concept_id = isaric_values_to_omop_ethnicity_concept.get(value)
+    if not ethnic_concept_id:
+        print(f"{value} does not map to vocabulary, will be set to 0")
+        ethnic_concept_id = 0
+    return ethnic_concept_id
 
 
 def map_omop_race(value):
@@ -61,15 +69,16 @@ def map_omop_race(value):
                                           "East Asian": OMOPRace.asian,
                                           "South Asian": OMOPRace.asian,
                                           "West Asian": OMOPRace.asian,
+                                          "Latin American": 0,
                                           "White": OMOPRace.white,
-                                          # "Aboriginal/First Nations": 8522,  # map to other 
-                                          "Other": OMOPRace.other_race,
-                                          "N/A": OMOPRace.unknown}
+                                          "Aboriginal/First Nations": OMOPRace.native,
+                                          "Other": 0,
+                                          "N/A": 0}
 
     race_concept_id = isaric_values_to_omop_race_concept.get(value)
     if not race_concept_id:
-        print(f"{value} does not maps to vocabulary, will be set to 'Other' i.e. 8522")
-        race_concept_id = OMOPRace.other_race
+        print(f"{value} does not maps to vocabulary, will be set to 0")
+        race_concept_id = 0
     return race_concept_id
 
 
@@ -108,12 +117,8 @@ def prepare_person(df, postgres: PostgresController, location_ids_dict: Dict[str
             "UNKNOWN"])
     # Solve ethnic
     df["ethnic"] = df["ethnic"].apply(lambda x: np.nan if x == "variable not in source" else x)
-    df["ethnicity_source_value"] = df.apply(lambda x: solve_original_ethnic(x["ethnic"], x["other_ethnic"]),
-                                            axis="columns")
+    df["ethnicity_concept_id"] = df["ethnicity_source_value"].apply(lambda x: map_omop_ethnicity(x))
     df["race_concept_id"] = df["ethnicity_source_value"].apply(lambda x: map_omop_race(x))
-    df["ethnicity_concept_id"] = df["ethnic"].apply(
-        lambda x: OMOPEthnic.hispanic_or_latino
-        if x == ISARICEthnic.latin_american else OMOPEthnic.ethnicity_not_stated)
 
     # Prepare for DB
     df.rename(columns=rename_dict, inplace=True)
