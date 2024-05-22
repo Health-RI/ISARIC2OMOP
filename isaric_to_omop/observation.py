@@ -6,15 +6,20 @@ from visit import visit_concept_type
 
 
 class OMOPObservations:
-    pneumothorax_ceterm = 253796
-    pleuraleff_ceterm = 254061
-    cryptogenic_ceterm = 36714118
-    bronchio_ceterm = 4165112
-    gastro_ceterm = 192671
-    pancreat_ceterm = 4192640
-    liverdysfunction_ceterm = 4245975
-    hyperglycemia_aeterm = 4214376
-    hypoglycemia_ceterm = 24609
+    pregyn_rptestcd = 4299535
+    smoking_mhyn_1 = 903654
+    smoking_mhyn_2 = 903653
+    smoking_mhyn_3 = 903651
+    inablewalk_ceoccur_v2 = 4086548
+    influ_mbyn = 37111241
+    corna_mbcat = 4224007
+    rsv_mbcat = 4274000
+    adeno_mbcat = 4253647
+    bact_mborres = 4165747
+    ardssev_ceterm_1 = 4116992
+    ardssev_ceterm_2 = 4285732
+    ardssev_ceterm_3 = 4087703
+    ardssev_ceterm_4 = 44805604
 
 
 def populate_observation(df: pd.DataFrame, postgres: PostgresController) -> None:
