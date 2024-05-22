@@ -27,14 +27,20 @@ class OMOPTemperatureUnits:
     
 
 class OMOPMeasConcept:
-    temp_vsyn = 4302666
+    temp_vsyn = 4174894
     hr_vsyn = 4239408
     rr_vsyn = 4313591
     sysbp_vsyn = 4152194
     diabp_vsyn = 4154790
-    oxy_vsorres = 4020553
-    height_vsorres = 4177340
-    weight_vsorres = 4099154
+    oxy_vsyn = 4011919
+    height_vsyn = 4177340
+    weight_vsorres = 4178502
+    daily_fi02_lbyn = 4353936
+    daily_sa02_lbyn = 40483579
+    daily_pao2_lbyn = 37392673
+    daily_pco2_lbyn = 37175110
+    daily_ph_lbyn = 4099592
+    daily_hco3_lbyn = 37398740
     avpu_vsorres = 3328462
     rass_vsyn = 36684829
     daily_gcs_lbyn = 40478949
@@ -42,6 +48,26 @@ class OMOPMeasConcept:
     diastolic_vsyn = 4154790
     daily_urine_lbyn = 4092643
     daily_hb_lbyn = 4094758
+    daily_wbc_lbyn = 4298431
+    daily_lymp_lbyn = 4214543
+    daily_neutro_lbyn = 4148615
+    daily_haematocrit_lbyn = 4267515
+    daily_plt_lbyn = 4094890
+    daily_aptt_lbyn = 4175016
+    daily_alt_lbyn = 4146380
+    daily_bil_lbyn = 4230543
+    daily_ast_lbyn = 4263457
+    daily_glucose_lbyn = 4149519
+    daily_bun_lbyn = 4094594
+    daily_lactate_lbyn = 4133534
+    daily_creat_lbyn = 4275203
+    daily_sodium_lbyn = 4269839
+    daily_potassium_lbyn = 4276440
+    daily_procal_lbyn = 44791466
+    daily_crp_lbyn = 4208414
+    daily_ldh_lbyn = 4012918
+    daily_ddimer_lbyn = 4322628
+    daily_il6_lbyn = 4332015
 
 
 def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
