@@ -7,13 +7,13 @@ from concept import ISARICYesNo
 
 
 class OMOPConditions:
-    pregyn_rptestcd = 4299535
     chroniccard_mhyn = 4134586
     chronicpul_mhyn = 316866
     asthma_mhyn = 317009
     renal_mhyn = 46271022
     chronicneu_mhyn = 4134145
     malignantneo_mhyn = 443392
+    aidshiv_mhyn = 4267417 # AIDS; should be mapped to 4013106 HIV positive as well
     obesity_mhyn = 433736
     diabetes_mhyn = 201820
     dementia_mhyn = 4182210
@@ -31,7 +31,6 @@ class OMOPConditions:
     jointpain_ceoccur_v2 = 77074
     shortbreath_ceoccur_v2 = 312437
     headache_ceoccur_v2 = 378253
-    inablewalk_ceoccur_v2 = 4086548
     confusion_ceoccur_v2 = 4164633
     seizures_cecoccur_v2 = 377091
     abdopain_ceoccur_v2 = 200219
@@ -42,6 +41,27 @@ class OMOPConditions:
     skinulcers_ceoccur_v2 = 4262920
     lymp_ceoccur_v2 = 315085
     bleed_ceoccur_v2 = 437312
+    bactpneu_ceterm = 257315
+    ards_ceterm = 4195694
+    pneumothorax_ceterm = 253796
+    pleuraleff_ceterm = 254061
+    cryptogenic_ceterm = 36714118
+    bronchio_ceterm = 4165112
+    meningitis_ceterm = 435785 # meningitis; should be mapped to 378143 Encephalitis as well
+    seizure_ceterm = 377091
+    stroke_ceterm = 381316
+    heartfailure_ceterm = 319835
+    arrhythmia_ceterm = 44784217
+    ischaemia_ceterm = 4186397
+    cardiacarrest_ceterm = 321042
+    bacteraemia_ceterm = 132736
+    coagulo_ceterm = 432585 # Blood coagulation disorder; should be mapped to 436093 Disseminated intravascular coagulation as well
+    rhabdomyolsis_ceterm = 4345578 # Rhabdomyolysis; should be mapped to 73001 myositis as well
+    gastro_ceterm = 192671
+    pancreat_ceterm = 4192640
+    liverdysfunction_ceterm = 4245975
+    hyperglycemia_aeterm = 4214376
+    hypoglycemia_ceterm = 24609
 
 
 def populate_condition_occurence(df: pd.DataFrame, postgres: PostgresController) -> None:
