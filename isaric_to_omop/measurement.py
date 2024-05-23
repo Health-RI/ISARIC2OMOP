@@ -10,20 +10,34 @@ class ISARICUnits:
 
 
 class OMOPUnits:
-    mmol_L = 8753
-    mg_dL = 8840
     kg = 9529
     cm = 8582
     percent = 8554
+    billion_L = 9444 # 10^9 per liter
+    thousand_uL = 9444 # 10^3 per microliter
+    umol_L = 8749 # micromole per liter
+    mmol_L = 8753 # millimole per liter
+    mg_dL = 8840 # milligram per decilter
 
 
 class ISARICTemperatureUnits:
     celsius = 1
     fahrenheit = 2
 
+
 class OMOPTemperatureUnits:
     celsius = 586323
     fahrenheit = 9289
+
+
+class ISARICPressureUnits:
+    kPa = 1
+    mmHg = 2
+
+
+class OMOPPressureUnits:
+    kPa = 44777602
+    mmHg = 8876
     
 
 class OMOPMeasConcept:
@@ -72,10 +86,15 @@ class OMOPMeasConcept:
 
 def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
     measurement_columns = [
-        "temp_vsyn", "temp_vsorresu", "hr_vsyn", "rr_vsyn", "sysbp_vsyn", "diabp_vsyn", "oxy_vsorres", "height_vsorres",
-        "weight_vsorres", "corna_mbcaty", "daily_fi02_lbyn", "daily_sa02_lbyn", "daily_pao2_lbyn",
-        "daily_pao2_lborresu", "daily_pco2_lbyn", "daily_pco2_lborresu", "daily_ph_lbyn", "daily_hco3_lbyn",
-        "avpu_vsorres", "rass_vsyn", "daily_gcs_lbyn", "systolic_vsyn", "diastolic_vsyn", "daily_urine_lbyn",
+        "temp_vsyn", "temp_vsorres", "temp_vsorresu", "hr_vsyn", "hr_vsorres", "rr_vsyn", "rr_vsorres",
+        "sysbp_vsyn", "sysbp_vsorres", "diabp_vsyn", "admission_diabp_vsorres", "oxy_vsyn", "oxy_vsorres", "oxy_vsorresu",
+        "height_vsyn", "height_vsorres", "weight_vsyn", "weight_vsorres", "weight_vsorresu",
+        "daily_fi02_lbyn", "daily_fi02_lborres", "daily_sa02_lbyn", "daily_sa02_lborres",
+        "daily_pao2_lbyn", "daily_pao2_lborres", "daily_pao2_lborresu",
+        "daily_pco2_lbyn", "daily_pco2_lborres", "daily_pco2_lborresu", "daily_ph_lbyn", "daily_ph_lborres",
+        "daily_hco3_lbyn", "daily_hco3_lborres", "avpu_vsorres", "rass_vsyn", "rass_vsorres",
+        "daily_gcs_lbyn", "daily_gcs_vsorres", "systolic_vsyn", "systolic_vsorres",
+        "diastolic_vsyn", "diastolic_vsorres", "daily_meanart_vsorres", "daily_urine_lbyn", "daily_urine_lborres",
         "daily_hb_lbyn", "daily_hb_lborresu", "daily_wbc_lbyn", "daily_wbc_lborresu", "daily_lymp_lbyn",
         "daily_neutro_lbyn", "daily_haematocrit_lbyn", "daily_plt_lbyn", "daily_plt_lborresu", "daily_aptt_lbyn",
         "daily_pt_inr_lbyn", "daily_alt_lbyn", "daily_bil_lbyn", "daily_bil_lborresu", "daily_ast_lbyn",
