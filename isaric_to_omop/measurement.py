@@ -60,6 +60,7 @@ class OMOPMeasConcept:
     daily_gcs_lbyn = 40478949
     systolic_vsyn = 4152194
     diastolic_vsyn = 4154790
+    daily_meanart_lbyn = 4298391
     daily_urine_lbyn = 4092643
     daily_hb_lbyn = 4094758
     daily_wbc_lbyn = 4298431
@@ -86,22 +87,48 @@ class OMOPMeasConcept:
 
 def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
     measurement_columns = [
-        "temp_vsyn", "temp_vsorres", "temp_vsorresu", "hr_vsyn", "hr_vsorres", "rr_vsyn", "rr_vsorres",
-        "sysbp_vsyn", "sysbp_vsorres", "diabp_vsyn", "admission_diabp_vsorres", "oxy_vsyn", "oxy_vsorres", "oxy_vsorresu",
-        "height_vsyn", "height_vsorres", "weight_vsyn", "weight_vsorres", "weight_vsorresu",
-        "daily_fi02_lbyn", "daily_fi02_lborres", "daily_sa02_lbyn", "daily_sa02_lborres",
+        "temp_vsyn", "temp_vsorres", "temp_vsorresu",
+        "hr_vsyn", "hr_vsorres",
+        "rr_vsyn", "rr_vsorres",
+        "sysbp_vsyn", "sysbp_vsorres",
+        "diabp_vsyn", "admission_diabp_vsorres",
+        "oxy_vsyn", "oxy_vsorres", "oxy_vsorresu",
+        "height_vsyn", "height_vsorres",
+        "weight_vsyn", "weight_vsorres", "weight_vsorresu",
+        "daily_fi02_lbyn", "daily_fi02_lborres",
+        "daily_sa02_lbyn", "daily_sa02_lborres",
         "daily_pao2_lbyn", "daily_pao2_lborres", "daily_pao2_lborresu",
-        "daily_pco2_lbyn", "daily_pco2_lborres", "daily_pco2_lborresu", "daily_ph_lbyn", "daily_ph_lborres",
-        "daily_hco3_lbyn", "daily_hco3_lborres", "avpu_vsorres", "rass_vsyn", "rass_vsorres",
-        "daily_gcs_lbyn", "daily_gcs_vsorres", "systolic_vsyn", "systolic_vsorres",
-        "diastolic_vsyn", "diastolic_vsorres", "daily_meanart_vsorres", "daily_urine_lbyn", "daily_urine_lborres",
-        "daily_hb_lbyn", "daily_hb_lborresu", "daily_wbc_lbyn", "daily_wbc_lborresu", "daily_lymp_lbyn",
-        "daily_neutro_lbyn", "daily_haematocrit_lbyn", "daily_plt_lbyn", "daily_plt_lborresu", "daily_aptt_lbyn",
-        "daily_pt_inr_lbyn", "daily_alt_lbyn", "daily_bil_lbyn", "daily_bil_lborresu", "daily_ast_lbyn",
-        "daily_glucose_lbyn", "daily_glucose_lborresu", "daily_bun_lbyn", "daily_bun_lborresu", "daily_lactate_lbyn",
-        "daily_lactate_lborresu", "daily_creat_lbyn", "daily_creat_lborresu", "daily_sodium_lbyn",
-        "daily_potassium_lbyn", "daily_procal_lbyn", "daily_crp_lbyn", "daily_ldh_lbyn", "daily_ddimer_lbyn",
-        "daily_ferritin_lbyn", "daily_il6_lbyn"
+        "daily_pco2_lbyn", "daily_pco2_lborres", "daily_pco2_lborresu",
+        "daily_ph_lbyn", "daily_ph_lborres",
+        "daily_hco3_lbyn", "daily_hco3_lborres",
+        "avpu_vsorres", "rass_vsyn", "rass_vsorres",
+        "daily_gcs_lbyn", "daily_gcs_vsorres",
+        "systolic_vsyn", "systolic_vsorres",
+        "diastolic_vsyn", "diastolic_vsorres",
+        "daily_meanart_lbyn", "daily_meanart_vsorres",
+        "daily_urine_lbyn", "daily_urine_lborres",
+        "daily_hb_lbyn", "daily_hb_lborres", "daily_hb_lborresu",
+        "daily_wbc_lbyn", "daily_wbc_lborres", "daily_wbc_lborresu",
+        "daily_lymp_lbyn", "daily_lymp_lborres",
+        "daily_neutro_lbyn", "daily_neutro_lborres",
+        "daily_haematocrit_lbyn", "daily_haematocrit_lborres",
+        "daily_plt_lbyn", "daily_plt_lborres", "daily_plt_lborresu",
+        "daily_aptt_lbyn", "daily_aptt_lborres",
+        "daily_pt_inr_lbyn", "daily_pt_lborres", "daily_inr_lborres",
+        "daily_alt_lbyn", "daily_alt_lborres",
+        "daily_bil_lbyn", "daily_bil_lborres", "daily_bil_lborresu",
+        "daily_ast_lbyn", "daily_ast_lborres",
+        "daily_glucose_lbyn", "daily_glucose_lborres", "daily_glucose_lborresu",
+        "daily_bun_lbyn", "daily_bun_lborres", "daily_bun_lborresu",
+        "daily_lactate_lbyn", "daily_lactate_lborres", "daily_lactate_lborresu",
+        "daily_creat_lbyn", "daily_creat_lborres", "daily_creat_lborresu",
+        "daily_sodium_lbyn", "daily_sodium_lborres",
+        "daily_potassium_lbyn", "daily_potassium_lborres",
+        "daily_procal_lbyn", "daily_procal_lborres",
+        "daily_crp_lbyn", "daily_crp_lborres",
+        "daily_ldh_lbyn", "daily_ldh_lborres",
+        "daily_ddimer_lbyn", "daily_ddimer_lborres",
+        "daily_il6_lbyn", "daily_il6_lborres"
     ]
 
     measurement_header = [
