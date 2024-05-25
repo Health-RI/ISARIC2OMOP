@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+import re
 from typing import List
 
 from core.db_connector import PostgresController
@@ -50,3 +51,14 @@ def validate_concept_domain(postgres: PostgresController, ids_in_question: List[
             log.warning(
                 f"Concept is not of {domain_id} domain: concept_name {item['concept_name']}, "
                 f"domain: {item['domain_id']}, concept_id: {item['concept_id']}")
+
+
+def merge_columns_with_postfixes(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    pattern = re.escape(column_name) + r"___[1-9][0-9]?"
+    columns_with_postfix = [c for c in df.columns if re.match(pattern, c)]
+    if column_name in df.columns and pd.isnull(df[column_name]).all():
+        for column in columns_with_postfix:
+            postfix = column.split("_")[-1]
+            df.loc[df[column].isin([1, 1.0, "1"]), column_name] = postfix
+    df.drop(columns=columns_with_postfix, inplace=True)
+    return df
