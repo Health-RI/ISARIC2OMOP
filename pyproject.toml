@@ -11,6 +11,7 @@ python = "^3.11"
 pandas = "^1.5.2"
 sqlalchemy = "^1.4.44"
 psycopg2-binary = "^2.9.5"
+pytest = "^8.2.1"
 
 
 [build-system]

@@ -21,6 +21,7 @@ class ISARICTemperatureUnits:
     celsius = 1
     fahrenheit = 2
 
+
 class OMOPTemperatureUnits:
     celsius = 586323
     fahrenheit = 9289

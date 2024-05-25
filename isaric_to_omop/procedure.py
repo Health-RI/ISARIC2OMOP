@@ -1,4 +1,5 @@
 from concept import ISARICYesNo
+import logging
 import numpy as np
 import pandas as pd
 
@@ -7,9 +8,15 @@ from utils import increment_last_id
 from concept import ISARICYesNo
 from visit import visit_concept_type
 
+log = logging.getLogger(__name__)
+
 
 class ProcedureConcept:
-    admission_to_icu = 4138933  # Procedure	SNOMED	Admission to intensive care unit	4138933	305351004
+    """
+    Assessment for admission to adult intensive care (SNOMED)
+    https://athena.ohdsi.org/search-terms/terms/42539725
+    """
+    admission_to_icu = 42539725
 
 
 class ISARICProcedureTerms(IntEnum):
@@ -21,31 +28,37 @@ class ISARICProcedureTerms(IntEnum):
     Other = 6
 
 
-class OMOPDrugs:
-    ribavirin = 4291865
-    Lopinavir_Ritonvir = 4275312
-    Interferon_alpha = 4333650
-    Interferon_beta = 46276542
-    Neuraminidase_inhibitors = 4333524
+# class OMOPDrugs:
+#     ribavirin = 4291865
+#     Lopinavir_Ritonvir = 4275312
+#     Interferon_alpha = 4333650
+#     Interferon_beta = 46276542
+#     Neuraminidase_inhibitors = 4333524
 
 
 class ISARICColumnsToOMOP:
+    daily_noninvasive_prtrt = 4177224
     daily_invasive_prtrt = 44790095
+    daily_ecmo_prtrt = 4052536
+    daily_nasaloxy_cmtrt = 37158406
     daily_inotrope_cmyn = 3655896
+    daily_nitritc_cmtrt = 37154040
+    daily_trach_prperf = 44783799
     daily_neuro_cmtrt = 4084313
-    daily_prone_cmtrt = 4050473
+    daily_prone_cmtrt = 4196006
     oxygen_cmoccur = 4239130
     noninvasive_proccur = 4177224
+    invasive_proccur = 44790095
     pronevent_prtrt = 4050473
     inhalednit_cmtrt = 37154040
     tracheo_prtrt = 44783799
-    extracorp_prtrt = None
+    extracorp_prtrt = 4052536
     rrt_prtrt = 4146536
     other_cmyn = None
-    antiviral_cmyn = 40177878
+    antiviral_cmyn = 4140762
     antibiotic_cmyn = 4085730
-    corticost_cmyn = 4333495
-    antifung_cmyn = 40177571
+    corticost_cmyn = 37312057
+    antifung_cmyn = 36713613
 
 
 def populate_icu_procedure(icu_visits, postgres):
@@ -73,23 +86,24 @@ def populate_icu_procedure(icu_visits, postgres):
 def populate_procedure(df, icu_visits, postgres):
     populate_icu_procedure(icu_visits, postgres)
 
-    procedure_columns = ["procedure_occurrence_id", "person_id", "procedure_concept_id", "procedure_date",
-                         "procedure_datetime", "procedure_end_date", "procedure_end_datetime",
-                         "procedure_type_concept_id", "modifier_concept_id", "quantity", "provider_id",
-                         "visit_occurrence_id", "visit_detail_id", "procedure_source_value",
-                         "procedure_source_concept_id", "modifier_source_value"]
+    omop_procedure_columns = ["procedure_occurrence_id", "person_id", "procedure_concept_id", "procedure_date",
+                              "procedure_datetime", "procedure_end_date", "procedure_end_datetime",
+                              "procedure_type_concept_id", "modifier_concept_id", "quantity", "provider_id",
+                              "visit_occurrence_id", "visit_detail_id", "procedure_source_value",
+                              "procedure_source_concept_id", "modifier_source_value"]
 
-    procedure_df = df.copy()[["subjid", "person_id", "daily_invasive_prtrt", "daily_inotrope_cmyn", "daily_neuro_cmtrt",
-                              "daily_prone_cmtrt", "oxygen_cmoccur", "noninvasive_proccur", "pronevent_prtrt",
-                              "inhalednit_cmtrt", "tracheo_prtrt", "extracorp_prtrt", "rrt_prtrt", "other_cmyn",
-                              "antiviral_cmyn", "antibiotic_cmyn", "corticost_cmyn", "antifung_cmyn",
+    procedure_df = df.copy()[["subjid", "person_id", "daily_invasive_prtrt", "daily_noninvasive_prtrt",
+                              "daily_ecmo_prtrt", "daily_nasaloxy_cmtrt", "daily_inotrope_cmyn", "daily_neuro_cmtrt",
+                              "daily_prone_cmtrt", "oxygen_cmoccur", "noninvasive_proccur", "invasive_proccur",
+                              "pronevent_prtrt", "inhalednit_cmtrt", "tracheo_prtrt", "extracorp_prtrt", "rrt_prtrt",
+                              "other_cmyn", "antiviral_cmyn", "antibiotic_cmyn", "corticost_cmyn", "antifung_cmyn",
                               "dsstdat", "hostdat"]]
     # antiviral_cmtrt
 
-    yes_no_columns = ["daily_invasive_prtrt", "daily_inotrope_cmyn", "daily_neuro_cmtrt",
-                              "daily_prone_cmtrt", "oxygen_cmoccur", "noninvasive_proccur", "pronevent_prtrt",
-                              "inhalednit_cmtrt", "tracheo_prtrt", "extracorp_prtrt", "rrt_prtrt", "other_cmyn",
-                              "antiviral_cmyn", "antibiotic_cmyn", "corticost_cmyn", "antifung_cmyn"]
+    yes_no_columns = ["daily_invasive_prtrt", "daily_inotrope_cmyn", "daily_neuro_cmtrt", "daily_prone_cmtrt",
+                      "oxygen_cmoccur", "noninvasive_proccur", "pronevent_prtrt", "inhalednit_cmtrt", "tracheo_prtrt",
+                      "extracorp_prtrt", "rrt_prtrt", "other_cmyn", "antiviral_cmyn", "antibiotic_cmyn",
+                      "corticost_cmyn", "antifung_cmyn"]
     procedure_df = pd.melt(procedure_df,
                            id_vars=["subjid", "person_id", "dsstdat", "hostdat"],
                            value_vars=yes_no_columns)
@@ -107,9 +121,7 @@ def populate_procedure(df, icu_visits, postgres):
     procedure_df.index += increment_by_index
     procedure_df.index.name = "procedure_occurrence_id"
     procedure_df.reset_index(drop=False, inplace=True)
-    procedure_df = procedure_df.reindex(columns=procedure_columns)
+    procedure_df = procedure_df.reindex(columns=omop_procedure_columns)
     postgres.df_to_postgres(table="procedure_occurrence", df=procedure_df)
 
     print()
-
-    pass
