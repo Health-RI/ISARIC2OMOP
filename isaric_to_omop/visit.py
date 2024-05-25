@@ -29,6 +29,16 @@ visit_concept_type = Concept(concept_id=764466,
 #                       "Electronic case report form": 764466}
 
 
+class ISARICVisitOutcomes:
+    """as per docs http://capacity-covid.eu/wp-content/uploads/CAPACITY-REDCap-2.pdf"""
+    discharged_alive = "1"
+    hospitalization = "2"
+    transfer_to_other_facility = "3"
+    death = "4"
+    palliative_discharge = "5"
+    unknown = "6"
+
+
 def populate_icu_visits(icu_visits, postgres):
     icu_visits["visit_concept_id"] = VisitConcept.intensive_care
     icu_visits["visit_start_date"] = icu_visits["icu_hostdat"]
