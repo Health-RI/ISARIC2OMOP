@@ -1,6 +1,10 @@
+import logging
 import pandas as pd
+from typing import List
 
 from core.db_connector import PostgresController
+
+log = logging.getLogger(__name__)
 
 
 def increment_last_id(table: str, column: str, postgres: PostgresController):
@@ -21,3 +25,28 @@ def prepare_autoincrement_index(df: pd.DataFrame,
     df.index.name = index_name
     df.reset_index(drop=False, inplace=True)
     return df
+
+
+def validate_concept_domain(postgres: PostgresController, ids_in_question: List[str], domain_id: str) -> None:
+    """
+    Validates if all concept ids are in the database and of expected domain
+    :param postgres: postgres client
+    :param ids_in_question: list of integer strings ids
+    :param domain_id: str, a name of a domain
+    :return: None
+    """
+    query = f"select * from vocabularies.concept where concept_id in ({', '.join(ids_in_question)});"
+
+    result = postgres.postgres_fetch(query)
+
+    missing_concepts = [x for x in ids_in_question if x not in result["concept_id"].values]
+    if missing_concepts:
+        log.warning(f"Following concept ids are missing from the database: {', '.join(missing_concepts)}")
+
+    unexpected_domain = result.loc[result["domain_id"] != domain_id]
+    if not unexpected_domain.empty:
+        records = unexpected_domain.to_dict("records")
+        for item in records:
+            log.warning(
+                f"Concept is not of {domain_id} domain: concept_name {item['concept_name']}, "
+                f"domain: {item['domain_id']}, concept_id: {item['concept_id']}")
