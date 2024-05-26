@@ -20,12 +20,7 @@ def process_input(path, postgres):
         location_df = data_df.copy()[["country"]].dropna(axis="rows").drop_duplicates()
         location_ids_dict = populate_location(location_df=location_df, postgres=postgres)
     # Prepare Person
-    person_source = data_df.copy()[[
-        "subjid", "sex", "age_estimateyears", "age_estimateyearsu", "ethnic", "other_ethnic", "country", "othcountry",
-        "sitename", "dsstdat"
-    ]]
-    person_source = person_source.drop_duplicates(subset=["subjid"], keep="first")
-    person_df = prepare_person(person_source, postgres, location_ids_dict)
+    person_df = prepare_person(data_df, postgres, location_ids_dict)
     person_ids_dict = pd.Series(person_df["person_id"].values, index=person_df["person_source_value"]).to_dict()
     # Add OMOP DB ids to input df
     data_df = data_df.loc[data_df["subjid"].isin(person_ids_dict.keys())]

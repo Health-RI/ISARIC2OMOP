@@ -10,7 +10,7 @@ from isaric_to_omop.utils import merge_columns_with_postfixes
                          [(pd.DataFrame(data={"ethnic": [np.nan, np.nan, np.nan],
                                               "ethnic___2": [np.nan, "1", np.nan],
                                               "ethnic___10": [1, np.nan, 1]}),
-                           pd.DataFrame(data={"ethnic": ["10", "2", "10"]})
+                           pd.DataFrame(data={"ethnic": [10.0, 2.0, 10.0]})
                            )])
 # todo add more params
 def test_merge_cols_with_postfix(df, expected):

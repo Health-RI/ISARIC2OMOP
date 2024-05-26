@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import IntEnum
 
+OMOP_NO_MATCHING_CONCEPT = 0
+
 
 @dataclass
 class Concept:

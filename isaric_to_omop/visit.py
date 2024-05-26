@@ -30,13 +30,17 @@ visit_concept_type = Concept(concept_id=764466,
 
 
 class ISARICVisitOutcomes:
-    """as per docs http://capacity-covid.eu/wp-content/uploads/CAPACITY-REDCap-2.pdf"""
-    discharged_alive = "1"
-    hospitalization = "2"
-    transfer_to_other_facility = "3"
-    death = "4"
-    palliative_discharge = "5"
-    unknown = "6"
+    """
+    as per docs http://capacity-covid.eu/wp-content/uploads/CAPACITY-REDCap-2.pdf
+    Outcome codes in dsterm if [dsstdtcyn] = '1' - dsstdtc - date of outcome
+    Same codes for capacity_discharge_required - capdis_outcome field (if [capdis_date] = '1' - capdis_outcomedate
+    """
+    discharged_alive = 1
+    hospitalization = 2
+    transfer_to_other_facility = 3
+    death = 4
+    palliative_discharge = 5
+    unknown = 6
 
 
 def populate_icu_visits(icu_visits, postgres):

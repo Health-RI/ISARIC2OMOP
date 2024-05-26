@@ -59,6 +59,6 @@ def merge_columns_with_postfixes(df: pd.DataFrame, column_name: str) -> pd.DataF
     if column_name in df.columns and pd.isnull(df[column_name]).all():
         for column in columns_with_postfix:
             postfix = column.split("_")[-1]
-            df.loc[df[column].isin([1, 1.0, "1"]), column_name] = postfix
+            df.loc[df[column].isin([1, 1.0, "1"]), column_name] = int(postfix)
     df.drop(columns=columns_with_postfix, inplace=True)
     return df
