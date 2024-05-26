@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime
+import logging
 
 from utils import increment_last_id
 from location import get_locations, populate_care_site
@@ -8,7 +9,9 @@ from core.db_connector import PostgresController
 from typing import Dict, Union
 
 from utils import merge_columns_with_postfixes
-from concept import OMOP_NO_MATCHING_CONCEPT
+# from concept import OMOP_NO_MATCHING_CONCEPT
+
+logger = logging.getLogger(__name__)
 
 
 ISARIC_SEX_CODES = {"1": "Male", "2": "Female", "-1": "Not specified"}
@@ -93,8 +96,9 @@ def map_omop_race(value):
 
     race_concept_id = isaric_values_to_omop_race_concept.get(value)
     if not race_concept_id:
-        print(f"{value} does not maps to vocabulary, will be set to 'Other' i.e. 8522")
-        race_concept_id = OMOPRace.other_race # OMOP_NO_MATCHING_CONCEPT
+        logger.warning(f"{value} does not maps to vocabulary, will be set to 'Other' i.e. 8522")
+        # logger.warning(f"{value} does not maps to vocabulary, will be set to 'No matching concept' i.e. 0")
+        race_concept_id = OMOPRace.other_race  # OMOP_NO_MATCHING_CONCEPT
     return race_concept_id
 
 

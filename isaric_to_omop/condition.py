@@ -6,6 +6,13 @@ from core.db_connector import PostgresController
 from concept import ISARICYesNo
 
 
+OMOP_CONDITION_HEADER = ["condition_occurrence_id", "person_id", "condition_concept_id", "condition_start_date",
+                         "condition_start_datetime", "condition_end_date", "condition_end_datetime",
+                         "condition_type_concept_id", "condition_status_concept_id", "stop_reason", "provider_id",
+                         "visit_occurrence_id", "visit_detail_id", "condition_source_value",
+                         "condition_source_concept_id", "condition_status_source_value"]
+
+
 class OMOPConditions:
     chroniccard_mhyn = 4134586
     chronicpul_mhyn = 316866
@@ -13,7 +20,7 @@ class OMOPConditions:
     renal_mhyn = 46271022
     chronicneu_mhyn = 4134145
     malignantneo_mhyn = 443392
-    aidshiv_mhyn = 4267417 # AIDS; should be mapped to 4013106 HIV positive as well
+    aidshiv_mhyn = 4267417  # AIDS; should be mapped to 4013106 HIV positive as well
     obesity_mhyn = 433736
     diabetes_mhyn = 201820
     dementia_mhyn = 4182210
@@ -47,7 +54,7 @@ class OMOPConditions:
     pleuraleff_ceterm = 254061
     cryptogenic_ceterm = 36714118
     bronchio_ceterm = 4165112
-    meningitis_ceterm = 435785 # meningitis; should be mapped to 378143 Encephalitis as well
+    meningitis_ceterm = 435785  # meningitis; should be mapped to 378143 Encephalitis as well
     seizure_ceterm = 377091
     stroke_ceterm = 381316
     heartfailure_ceterm = 319835
@@ -55,8 +62,8 @@ class OMOPConditions:
     ischaemia_ceterm = 4186397
     cardiacarrest_ceterm = 321042
     bacteraemia_ceterm = 132736
-    coagulo_ceterm = 432585 # Blood coagulation disorder; should be mapped to 436093 Disseminated intravascular coagulation as well
-    rhabdomyolsis_ceterm = 4345578 # Rhabdomyolysis; should be mapped to 73001 myositis as well
+    coagulo_ceterm = 432585  # Blood coagulation disorder; should be mapped to 436093 Disseminated intravascular coagulation as well
+    rhabdomyolsis_ceterm = 4345578  # Rhabdomyolysis; should be mapped to 73001 myositis as well
     gastro_ceterm = 192671
     pancreat_ceterm = 4192640
     liverdysfunction_ceterm = 4245975
@@ -65,11 +72,6 @@ class OMOPConditions:
 
 
 def populate_condition_occurence(df: pd.DataFrame, postgres: PostgresController) -> None:
-    conditions_header = ["condition_occurrence_id", "person_id", "condition_concept_id", "condition_start_date",
-                         "condition_start_datetime", "condition_end_date", "condition_end_datetime",
-                         "condition_type_concept_id", "condition_status_concept_id", "stop_reason", "provider_id",
-                         "visit_occurrence_id", "visit_detail_id", "condition_source_value",
-                         "condition_source_concept_id", "condition_status_source_value"]
 
     cond_occ_columns = ["chroniccard_mhyn", "chronicpul_mhyn", "asthma_mhyn", "renal_mhyn", "modliver_mhyn", "mildliv_mhyn",
                          "chronicneu_mhyn", "malignantneo_mhyn", "chronhaemo_mhyn", "aidshiv_mhyn",
@@ -112,5 +114,5 @@ def populate_condition_occurence(df: pd.DataFrame, postgres: PostgresController)
                                                "condition_occurrence",
                                                "condition_occurrence_id",
                                                postgres)
-    condition_df = condition_df.reindex(columns=conditions_header)
+    condition_df = condition_df.reindex(columns=OMOP_CONDITION_HEADER)
     postgres.df_to_postgres(table="condition_occurrence", df=condition_df)
