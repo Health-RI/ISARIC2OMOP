@@ -34,6 +34,35 @@ class ISARICProcedureTerms(IntEnum):
 #     Interferon_alpha = 4333650
 #     Interferon_beta = 46276542
 #     Neuraminidase_inhibitors = 4333524
+class OMOPProcedure:
+    daily_noninvasive_prtrt = 4177224
+    daily_invasive_prtrt = 44790095
+    daily_ecmo_prtrt = 4052536
+    daily_nasaloxy_cmtrt = 37158406
+    daily_inotrope_cmyn = 3655896
+    daily_nitritc_cmtrt = 37154040
+    daily_trach_prperf = 44783799
+    daily_prone_cmtrt = 4196006
+    oxygen_cmoccur = 4239130
+    noninvasive_proccur = 4177224
+    invasive_proccur = 44790095
+    pronevent_prtrt = 4196006
+    inhalednit_cmtrt = 37154040
+    tracheo_prtrt = 44783799
+    extracorp_prtrt = 4052536
+    rrt_prtrt = 4146536
+    antiviral_cmyn = 4140762
+    antibiotic_cmyn = 4085730
+    corticost_cmyn = 37312057
+    antifung_cmyn = 36713613
+
+
+class OMOPDrugs:
+    ribavirin = 4291865
+    Lopinavir_Ritonvir = 4275312
+    Interferon_alpha = 4333650
+    Interferon_beta = 46276542
+    Neuraminidase_inhibitors = 4333524
 
 
 class ISARICColumnsToOMOP:
