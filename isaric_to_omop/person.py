@@ -96,8 +96,8 @@ def map_omop_race(value):
 
     race_concept_id = isaric_values_to_omop_race_concept.get(value)
     if not race_concept_id:
-        logger.warning(f"{value} does not maps to vocabulary, will be set to 'Other' i.e. 8522")
-        # logger.warning(f"{value} does not maps to vocabulary, will be set to 'No matching concept' i.e. 0")
+        logger.warning(f"{value} does not maps to vocabulary, will be set to 'No matching concept' i.e. "
+                       f"{OMOP_NO_MATCHING_CONCEPT}")
         race_concept_id = OMOP_NO_MATCHING_CONCEPT  # OMOPRace.other_race
     return race_concept_id
 

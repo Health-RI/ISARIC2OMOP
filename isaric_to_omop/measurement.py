@@ -24,6 +24,11 @@ class ISARIGlucoseCUnits:
     mg_dL = 2
 
 
+class ISARICHbConcentration:
+    gram_per_L = 1
+    gram_per_dL = 2
+
+
 class OMOPUnits:
     kg = 9529
     cm = 8582
@@ -37,6 +42,8 @@ class OMOPUnits:
     mmol_L = 8753  # millimole per liter
     mg_dL = 8840  # milligram per decilter
     ng_ml = 8842  # nanogram per milliliter ng/ml
+    gram_per_L = 8636
+    gram_per_dL = 8713
     milliequivalent_per_liter = 9557  # mEq/L
     cells_uL = 8784  # cells per microliter
     unit_per_liter = 8645
@@ -50,6 +57,11 @@ class OMOPUnits:
     second = 8555
     # other
     ml_per_24h = 8930  # mL / 24 hours
+
+
+class ISARICCellCounts:
+    billion_L = 1  # 10^9 per liter
+    thousand_uL = 2  # 10^3 per microliter
 
 
 class ISARICTemperatureUnits:
@@ -130,33 +142,77 @@ class OMOPMeasConcept:
     apvs_weight_vs = 4264825
 
 
-MEAS_CONF = {
-    "daily_fi02_lb": {"units": OMOPUnits.percent, "range_low": 0.2, "range_high": 1},
-    "daily_sao2_lb": {"units": OMOPUnits.percent},
-    "daily_pao2_lb": {"isaric_units": ISARICPressureUnits, "range_low": 0, "range_high": 500},
-    "daily_pco2_lb": {"isaric_units": ISARICPressureUnits, "range_low": 0, "range_high": 200},
-    "daily_hco3_lb": {"units": OMOPUnits.milliequivalent_per_liter},
-    "daily_baseex_lb": {"units": OMOPUnits.mmol_L},
-    "daily_gcs_vs": {"range_low": 3, "range_high": 15},
-    "systolic_vs": {"units": OMOPUnits.mmHg},
-    "diastolic_vs": {"units": OMOPUnits.mmHg},
-    "daily_meanart_vs": {"units": OMOPUnits.mmHg, "range_low": 10, "range_high": 200},
-    "daily_urine_lb": {"units": OMOPUnits.ml_per_24h, "range_low": 0, "range_high": 15000},
-    "daily_lymp_lb": {"units": OMOPUnits.cells_uL, "range_low": 10, "range_high": 200},
-    "daily_neutro_lb": {"units": OMOPUnits.cells_uL, "range_low": 10, "range_high": 200},
-    "daily_haematocrit_lb": {"units": OMOPUnits.percent},
-    "daily_pt_lb": {"units": OMOPUnits.second, "range_low": 10, "range_high": 100},
-    "daily_inr_lb": {"range_low": 10, "range_high": 100},
-    "daily_alt_lb": {"units": OMOPUnits.unit_per_liter, "range_low": 0, "range_high": 8000},
-    "daily_bil_lb": {"range_low": 0, "range_high": 700},
-    "daily_ast_lb": {"units": OMOPUnits.unit_per_liter, "range_low": 0, "range_high": 8000},
+MEAS_OMOP_UNITS_MAPPING = {
+    "temp_vs": {},
+    "daily_temp_vs": {},
+    "hr_vs": {},
+    "daily_hr_vs": {},
+    "rr_vs": {},
+    "daily_rr_vs": {},
+    "sysbp_vs": {},
+    "diabp_vs": {},
+    "admission_diabp_vs": OMOPUnits.mmHg,
+    "oxy_vs": {},
+    "daily_oxy_vs": {},
+    "height_vs": {},
+    "weight_vs": {},
+    "daily_fi02_lb": OMOPUnits.percent,
+    "daily_sao2_lb": OMOPUnits.percent,
+    "daily_hco3_lb": OMOPUnits.milliequivalent_per_liter,
+    "daily_baseex_lb": OMOPUnits.mmol_L,
+    "systolic_vs": OMOPUnits.mmHg,
+    "diastolic_vs": OMOPUnits.mmHg,
+    "daily_meanart_vs": OMOPUnits.mmHg,
+    "daily_urine_lb": OMOPUnits.ml_per_24h,
+    "daily_lymp_lb": OMOPUnits.cells_uL,
+    "daily_neutro_lb": OMOPUnits.cells_uL,
+    "daily_haematocrit_lb": OMOPUnits.percent,
+    "daily_pt_lb": OMOPUnits.second,
+    "daily_alt_lb": OMOPUnits.unit_per_liter,
+    "daily_ast_lb": OMOPUnits.unit_per_liter,
+    "daily_ph_lb": {},
+    "avpu_vs": {},
+    "rass_vs": {},
+    "daily_gcs_lb": {},
+    "daily_meanart_lb": {},
+    "daily_plt_lb": {},
+    "daily_glucose_lb": {},
+    "daily_bun_lb": {},
+    "daily_lactate_lb": {},
+    "daily_creat_lb": {},
+    "daily_sodium_lb": {},
+    "daily_potassium_lb": {},
+    "daily_procal_lb": {},
+    "daily_crp_lb": {},
+    "daily_ldh_lb": {},
+    "daily_ddimer_lb": {},
+    "daily_il6_lb": {},
+    "daily_stercap_vs": {},
+    "daily_aptt_lb": {},
+    "daily_aptr_lb": {},
+    "daily_crekin_lb": {},  # ???
+    "daily_ferritin_lb": {},  # ng/ml
+    "daily_fibrinogen_lb": {},
+    "stercap_vs": {},
+    "apvs_weight_vs": {}
 }
+
+MEAS_ISARIC_CODES_UNITS_MAPPING = {
+
+    "daily_pao2_lb": ISARICPressureUnits,
+    "daily_pco2_lb": ISARICPressureUnits,
+    "daily_bil_lb": ISARIGlucoseCUnits,
+    "daily_hb_lb": ISARICHbConcentration,
+    "daily_wbc_lb": ISARICCellCounts,
+}
+
+UNITS_NOT_EXPECTED = ["daily_gcs_vs", "daily_inr_lb"]
 
 
 def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
     general_columns = ["daily_dsstdat", "person_id", "hostdat", "cestdat", "dsstdat", "daily_lbdat"]
     # measurement column name pattern
-    pattern = r"([a-z_]*_(vs|lb))(yn|orres(u)?)$"
+    pattern = re.compile("([a-z0-9_]*_(vs|lb))(yn|orres(u)?)$")
     # select measurement columns dynamically
     measurement_columns = [x for x in df.columns if re.match(pattern, x)]
     if "daily_lbperf" in df.columns:
