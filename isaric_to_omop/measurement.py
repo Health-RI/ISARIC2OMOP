@@ -6,7 +6,9 @@ from core.db_connector import PostgresController
 from visit import visit_concept_type
 from utils import prepare_autoincrement_index
 
-from concept import ISARICYesNo
+from concept import ISARICYesNo, OMOP_NO_MATCHING_CONCEPT
+
+log = logging.getLogger(__name__)
 
 OMOP_MEASUREMENT_HEADER = [
     "measurement_id", "person_id", "measurement_concept_id", "measurement_date", "measurement_datetime",
@@ -163,7 +165,7 @@ def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
     measurements_df = df.copy()[general_columns + measurement_columns]
     # filter pt/inr before stacking columns
     # daily_pt_lborres - show the field ONLY if: [daily_pt_inr_lbyn] = '1'; daily_inr_lborres - show the field ONLY if:
-    # [daily_pt_inr_lbyn] = '2'
+    # [daily_pt_inr_lbyn] = '2' setting not matching the filter values to None to remove them afterward
     if "daily_pt_inr_lbyn" in df.columns:
         measurements_df.loc[measurements_df["daily_pt_inr_lbyn"].apply(
             lambda x: int(x) == ISARICDailyPTINRlbyn.pt if pd.notnull(x) else False), "daily_inr_lbyn"] = None
@@ -205,7 +207,6 @@ def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
         measurements_df["avail"].apply(lambda x: int(x) == ISARICYesNo.yes if pd.notnull(x) else False)]
 
     measurements_df = measurements_df.loc[pd.notnull(measurements_df["value"])]
-    # todo filter on avail
 
     # todo code for units properly
     # {'daily_bil_lb', 'daily_bun_lb', 'daily_creat_lb', 'daily_ddimer_lb', 'daily_glucose_lb', 'daily_hb_lb', 
@@ -215,10 +216,12 @@ def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
     # measurements_df.loc[measurements_df["variable"] == "height_vsorres", "unit"] = OMOPUnits.cm
     # measurements_df.loc[measurements_df["variable"] == "weight_vsorres", "unit"] = OMOPUnits.kg
 
-    measurements_df["measurement_concept_id"] = measurements_df["variable"].apply(lambda x: getattr(OMOPMeasConcept, x))
-    no_concept = measurements_df.loc[pd.isnull(measurements_df["measurement_concept_id"]), "variable"].values.tolist()
+    measurements_df["measurement_concept_id"] = measurements_df["variable"].apply(
+        lambda x: getattr(OMOPMeasConcept, x, OMOP_NO_MATCHING_CONCEPT))
+    no_concept = measurements_df.loc[
+        measurements_df["measurement_concept_id"] == OMOP_NO_MATCHING_CONCEPT, "variable"].unique().tolist()
     if no_concept:
-        print(no_concept)
+        log.warning(f"No matching concept for the following measurements: {', '.join(no_concept)}")
     # Set dates
     measurements_df.loc[
         measurements_df["variable"].str.endswith("_lb"), "measurement_date"] = measurements_df["daily_lbdat"]

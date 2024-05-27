@@ -9,7 +9,7 @@ from core.db_connector import PostgresController
 from typing import Dict, Union
 
 from utils import merge_columns_with_postfixes
-# from concept import OMOP_NO_MATCHING_CONCEPT
+from concept import OMOP_NO_MATCHING_CONCEPT
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class OMOPEthnic:
     """"Definition of Ethnicity concepts based on concept ID"""
     hispanic_or_latino = 38003563
     not_hispanic_or_latino = 38003564
-    ethnicity_not_stated = 37394011  # non-standard deprecated concept
+    # ethnicity_not_stated = 37394011  # non-standard deprecated concept
 
 
 class OMOPRace:
@@ -52,8 +52,8 @@ class OMOPRace:
     asian = 8515
     white = 8527
     native = 8557
-    other_race = 8522  # non-standard deprecated concept
-    unknown = 8552  # non-standard deprecated concept
+    # other_race = 8522  # non-standard deprecated concept
+    # unknown = 8552  # non-standard deprecated concept
 
 
 class ISARICAgeUnits:
@@ -87,18 +87,18 @@ def map_omop_race(value):
                                           "East Asian": OMOPRace.asian,
                                           "South Asian": OMOPRace.asian,
                                           "West Asian": OMOPRace.asian,
-                                          "Latin American": OMOPRace.other_race,  # OMOP_NO_MATCHING_CONCEPT,
+                                          "Latin American": OMOP_NO_MATCHING_CONCEPT,  # OMOPRace.other_race,
                                           "White": OMOPRace.white,
                                           "Aboriginal/First Nations": OMOPRace.native,
-                                          "Other": OMOPRace.other_race,  # OMOP_NO_MATCHING_CONCEPT,
-                                          "N/A": OMOPRace.unknown  # OMOP_NO_MATCHING_CONCEPT
+                                          "Other": OMOP_NO_MATCHING_CONCEPT,  # OMOPRace.other_race,
+                                          "N/A": OMOP_NO_MATCHING_CONCEPT  # OMOPRace.unknown
                                           }
 
     race_concept_id = isaric_values_to_omop_race_concept.get(value)
     if not race_concept_id:
         logger.warning(f"{value} does not maps to vocabulary, will be set to 'Other' i.e. 8522")
         # logger.warning(f"{value} does not maps to vocabulary, will be set to 'No matching concept' i.e. 0")
-        race_concept_id = OMOPRace.other_race  # OMOP_NO_MATCHING_CONCEPT
+        race_concept_id = OMOP_NO_MATCHING_CONCEPT  # OMOPRace.other_race
     return race_concept_id
 
 
@@ -106,7 +106,7 @@ def map_omop_ethnicity(value):
     """
     distinguishes only between 'Hispanic', 'Not Hispanic' and not specified
     """
-    omop_ethnicity = OMOPEthnic.ethnicity_not_stated  # OMOP_NO_MATCHING_CONCEPT
+    omop_ethnicity = OMOP_NO_MATCHING_CONCEPT  # OMOPEthnic.ethnicity_not_stated
     if pd.notnull(value):
         if int(value) == ISARICEthnic.latin_american:
             omop_ethnicity = OMOPEthnic.hispanic_or_latino
