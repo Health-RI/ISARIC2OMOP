@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 from utils import prepare_autoincrement_index
 from visit import visit_concept_type
@@ -5,12 +7,13 @@ from core.db_connector import PostgresController
 
 from concept import ISARICYesNo
 
+log = logging.getLogger(__name__)
 
-OMOP_CONDITION_HEADER = ["condition_occurrence_id", "person_id", "condition_concept_id", "condition_start_date",
-                         "condition_start_datetime", "condition_end_date", "condition_end_datetime",
-                         "condition_type_concept_id", "condition_status_concept_id", "stop_reason", "provider_id",
-                         "visit_occurrence_id", "visit_detail_id", "condition_source_value",
-                         "condition_source_concept_id", "condition_status_source_value"]
+OMOP_CONDITION_HEADER = [
+    "condition_occurrence_id", "person_id", "condition_concept_id", "condition_start_date", "condition_start_datetime",
+    "condition_end_date", "condition_end_datetime", "condition_type_concept_id", "condition_status_concept_id",
+    "stop_reason", "provider_id", "visit_occurrence_id", "visit_detail_id", "condition_source_value",
+    "condition_source_concept_id", "condition_status_source_value"]
 
 
 class OMOPConditions:
@@ -20,7 +23,7 @@ class OMOPConditions:
     renal_mhyn = 46271022
     chronicneu_mhyn = 4134145
     malignantneo_mhyn = 443392
-    aidshiv_mhyn = 4267417  # AIDS; should be mapped to 4013106 HIV positive as well
+    aidshiv_mhyn = 4267414  # AIDS; should be mapped to 4013106 HIV positive as well
     obesity_mhyn = 433736
     diabetes_mhyn = 201820
     dementia_mhyn = 4182210
@@ -72,26 +75,27 @@ class OMOPConditions:
 
 
 def populate_condition_occurence(df: pd.DataFrame, postgres: PostgresController) -> None:
-
-    cond_occ_columns = ["chroniccard_mhyn", "chronicpul_mhyn", "asthma_mhyn", "renal_mhyn", "modliver_mhyn", "mildliv_mhyn",
-                         "chronicneu_mhyn", "malignantneo_mhyn", "chronhaemo_mhyn", "aidshiv_mhyn",
-                         "obesity_mhyn", "diabetiscomp_mhyn", "diabetes_mhyn", "rheumatology_mhyr",
-                         "dementia_mhyn", "malnutrition_mhyn", "smoking_mhyn", "dehydration_vsorres",
-                         "fever_ceoccur_v2", "cough_ceoccur_v2", "coughsput_ceoccur_v2", "coughhb_ceoccur_v2",
-                         "sorethroat_ceoccur_v2", "runnynose_ceoccur_v2", "earpain_ceoccur_v2",
-                         "wheeze_ceoccur_v2", "chestpain_ceoccur_v2", "myalgia_ceoccur_v2",
-                         "jointpain_ceoccur_v2", "fatigue_ceoccur_v2", "shortbreath_ceoccur_v2",
-                         "headache_ceoccur_v2", "inablewalk_ceoccur_v2", "confusion_ceoccur_v2",
-                         "seizures_cecoccur_v2", "abdopain_ceoccur_v2", "vomit_ceoccur_v2",
-                         "diarrhoea_ceoccur_v2", "conjunct_ceoccur_v2", "rash_ceoccur_v2",
-                         "skinulcers_ceoccur_v2", "lymp_ceoccur_v2", "bleed_ceoccur_v2", "bleed_ceterm_v2", "bleed_cetermy_v2",
-                         "viralpneu_ceterm", "bactpneu_ceterm", "ards_ceterm", "ardssev_ceterm",
-                         "pneumothorax_ceterm", "pleuraleff_ceterm", "cryptogenic_ceterm", "bronchio_ceterm",
-                         "meningitis_ceterm", "seizure_ceterm", "stroke_ceterm", "heartfailure_ceterm",
-                         "arrhythmia_ceterm", "ischaemia_ceterm", "cardiacarrest_ceterm", "bacteraemia_ceterm",
-                         "coagulo_ceterm", "aneamia_ceterm", "rhabdomyolsis_ceterm", "renalinjury_ceterm",
-                         "gastro_ceterm", "pancreat_ceterm", "liverdysfunction_ceterm", "hyperglycemia_aeterm",
-                         "hypoglycemia_ceterm", "other_ceoccur", "other_ceterm"]
+    cond_occ_columns = ["chroniccard_mhyn", "chronicpul_mhyn", "asthma_mhyn", "renal_mhyn", "modliver_mhyn",
+                        "mildliv_mhyn",
+                        "chronicneu_mhyn", "malignantneo_mhyn", "chronhaemo_mhyn", "aidshiv_mhyn",
+                        "obesity_mhyn", "diabetiscomp_mhyn", "diabetes_mhyn", "rheumatology_mhyr",
+                        "dementia_mhyn", "malnutrition_mhyn", "smoking_mhyn", "dehydration_vsorres",
+                        "fever_ceoccur_v2", "cough_ceoccur_v2", "coughsput_ceoccur_v2", "coughhb_ceoccur_v2",
+                        "sorethroat_ceoccur_v2", "runnynose_ceoccur_v2", "earpain_ceoccur_v2",
+                        "wheeze_ceoccur_v2", "chestpain_ceoccur_v2", "myalgia_ceoccur_v2",
+                        "jointpain_ceoccur_v2", "fatigue_ceoccur_v2", "shortbreath_ceoccur_v2",
+                        "headache_ceoccur_v2", "inablewalk_ceoccur_v2", "confusion_ceoccur_v2",
+                        "seizures_cecoccur_v2", "abdopain_ceoccur_v2", "vomit_ceoccur_v2",
+                        "diarrhoea_ceoccur_v2", "conjunct_ceoccur_v2", "rash_ceoccur_v2",
+                        "skinulcers_ceoccur_v2", "lymp_ceoccur_v2", "bleed_ceoccur_v2", "bleed_ceterm_v2",
+                        "bleed_cetermy_v2",
+                        "viralpneu_ceterm", "bactpneu_ceterm", "ards_ceterm", "ardssev_ceterm",
+                        "pneumothorax_ceterm", "pleuraleff_ceterm", "cryptogenic_ceterm", "bronchio_ceterm",
+                        "meningitis_ceterm", "seizure_ceterm", "stroke_ceterm", "heartfailure_ceterm",
+                        "arrhythmia_ceterm", "ischaemia_ceterm", "cardiacarrest_ceterm", "bacteraemia_ceterm",
+                        "coagulo_ceterm", "aneamia_ceterm", "rhabdomyolsis_ceterm", "renalinjury_ceterm",
+                        "gastro_ceterm", "pancreat_ceterm", "liverdysfunction_ceterm", "hyperglycemia_aeterm",
+                        "hypoglycemia_ceterm", "other_ceoccur", "other_ceterm"]
 
     general_columns = ["dsstdat", "person_id", "hostdat", "cestdat"]
 
@@ -106,9 +110,12 @@ def populate_condition_occurence(df: pd.DataFrame, postgres: PostgresController)
     condition_df["condition_start_date"] = condition_df.apply(
         lambda x: x["cestdat"] if pd.notnull(x["cestdat"]) else x["dsstdat"], axis="columns")
     condition_df["condition_type_concept_id"] = visit_concept_type.concept_id
-    condition_df["condition_concept_id"] = condition_df["variable"].apply(
-        lambda x: getattr(OMOPConditions, x))
+    condition_df["condition_concept_id"] = condition_df["variable"].apply(lambda x: getattr(OMOPConditions, x, None))
     # todo add smoking status and other conditions
+    if pd.isnull(condition_df["condition_concept_id"]).any():
+        no_concept = condition_df.loc[
+            pd.isnull(condition_df["condition_concept_id"]), "variable"].unique().tolist()
+        log.warning(f"Following ISARIC condition values are not mapped to OMOP concepts: {', '.join(no_concept)}")
     condition_df = condition_df.loc[pd.notnull(condition_df["condition_concept_id"])]
     condition_df = prepare_autoincrement_index(condition_df,
                                                "condition_occurrence",
