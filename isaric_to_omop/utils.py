@@ -7,6 +7,8 @@ from core.db_connector import PostgresController
 
 log = logging.getLogger(__name__)
 
+GENERIC_COLUMNS = ["daily_dsstdat", "person_id", "hostdat", "cestdat", "dsstdat"]
+
 
 def increment_last_id(table: str, column: str, postgres: PostgresController):
     query = f"SELECT MAX({column}) FROM {postgres.cdm_schema}.{table};"
@@ -62,3 +64,13 @@ def merge_columns_with_postfixes(df: pd.DataFrame, column_name: str) -> pd.DataF
             df.loc[df[column].isin([1, 1.0, "1"]), column_name] = int(postfix)
     df.drop(columns=columns_with_postfix, inplace=True)
     return df
+
+
+def select_columns_by_pattern(df: pd.DataFrame, pattern: re.Pattern, extra: List = None) -> pd.DataFrame:
+    target_columns = [x for x in df.columns if re.match(pattern, x)]  # or x in ["smoking_mhyn", "mbperf"]]
+    if extra:
+        for field in extra:
+            if field in df.columns:
+                target_columns.append(field)
+    new_df = df.copy()[GENERIC_COLUMNS + target_columns]
+    return new_df

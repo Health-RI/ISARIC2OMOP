@@ -9,6 +9,7 @@ from location import populate_location
 from condition import populate_condition_occurence
 from observation import populate_observation
 from measurement import populate_measurements
+from drug_exposure import populate_drug_exposure
 
 
 def process_input(path, postgres):
@@ -33,6 +34,7 @@ def process_input(path, postgres):
     populate_measurements(df=data_df, postgres=postgres)
     # Prepare and populate procedure
     populate_procedure(df=data_df, icu_visits=icu_visits, postgres=postgres)
+    populate_drug_exposure(df=data_df, postgres=postgres)
 
 
 # Press the green button in the gutter to run the script.
