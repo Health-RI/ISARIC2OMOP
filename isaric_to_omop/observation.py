@@ -85,6 +85,9 @@ def populate_observation(df: pd.DataFrame, postgres: PostgresController) -> None
                        (observation_df["value"] == 3), "observation_concept_id"] = OMOPObservations.smoking_mhyn_3
     observation_df = observation_df.loc[(observation_df["variable"] == "smoking_mhyn") |
     (observation_df["value"] == ISARICYesNo.yes)]
+    # todo move to main for all dates columns
+    observation_df["daily_dsstdat"] = pd.to_datetime(observation_df["daily_dsstdat"], errors="coerce")
+    observation_df["cestdat"] = pd.to_datetime(observation_df["cestdat"], errors="coerce")
     observation_df["observation_date"] = observation_df.apply(
         lambda x: x["cestdat"] if pd.notnull(x["cestdat"]) else x["daily_dsstdat"], axis="columns")
     if pd.isnull(observation_df["observation_date"]).any():

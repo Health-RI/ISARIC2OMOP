@@ -107,6 +107,10 @@ def populate_condition_occurence(df: pd.DataFrame, postgres: PostgresController)
                            value_vars=cond_occ_columns)
 
     condition_df = condition_df.loc[condition_df["value"] == ISARICYesNo.yes]
+    # todo move to main for all dates columns
+    condition_df["dsstdat"] = pd.to_datetime(condition_df["dsstdat"], errors="coerce")
+    condition_df["cestdat"] = pd.to_datetime(condition_df["cestdat"], errors="coerce")
+    
     condition_df["condition_start_date"] = condition_df.apply(
         lambda x: x["cestdat"] if pd.notnull(x["cestdat"]) else x["dsstdat"], axis="columns")
     condition_df["condition_type_concept_id"] = visit_concept_type.concept_id
@@ -116,6 +120,9 @@ def populate_condition_occurence(df: pd.DataFrame, postgres: PostgresController)
         no_concept = condition_df.loc[
             pd.isnull(condition_df["condition_concept_id"]), "variable"].unique().tolist()
         log.warning(f"Following ISARIC condition values are not mapped to OMOP concepts: {', '.join(no_concept)}")
+    if pd.isnull(condition_df["condition_start_date"]).any():
+        log.warning("conditions with no dates will be excluded")
+        condition_df = condition_df.loc[pd.notnull(condition_df["condition_start_date"])]
     condition_df = condition_df.loc[pd.notnull(condition_df["condition_concept_id"])]
     condition_df = prepare_autoincrement_index(condition_df,
                                                "condition_occurrence",

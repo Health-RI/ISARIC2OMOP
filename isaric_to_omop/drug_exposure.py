@@ -24,26 +24,20 @@ OMOP_DRUG_EXP_FIELDS = [
 class ISARICProcedureTerms:
     ribavirin = 1
     lopinavir_ritonvir = 2
-    Interferon_alpha = 3
-    Interferon_beta = 4
-    Neuraminidase_inhibitors = 5
-    Other = 6
-
-
-# class OMOPDrugs:
-#     ribavirin = 1762711
-#     Lopinavir_Ritonvir = 4275312
-#     Interferon_alpha = 4333650
-#     Interferon_beta = 46276542
-#     Neuraminidase_inhibitors = 4333524
+    interferon_alpha = 3
+    interferon_beta = 4
+    neuraminidase_inhibitors = 5
+    other = 6
 
 
 class OMOPDrugs:
-    ribavirin = 4291865
-    Lopinavir_Ritonvir = 4275312
-    Interferon_alpha = 4333650
-    Interferon_beta = 46276542
-    Neuraminidase_inhibitors = 4333524
+    dopamine = 1337860
+    ciprofloxacin = 1797513
+    ribavirin = 1762711
+    lopinavir_ritonvir = 4275312
+    interferon_alpha = 4333650
+    interferon_beta = 46276542
+    neuraminidase_inhibitors = 4333524
 
 
 class OMOPTreatmentAsProcedure:
@@ -71,10 +65,16 @@ def populate_procedure_treatment(df: pd.DataFrame, postgres: PostgresController)
     df = df.loc[(df["variable"].apply(lambda x: "anti" in x) & pd.notnull(df["avail"])) | 
                 (df["value"] == ISARICYesNo.yes)
     ]
+    df["dsstdat"] = pd.to_datetime(df["dsstdat"], errors="coerce")
+    df["start_date"] = pd.to_datetime(df["start_date"], errors="coerce")
+    df["end_date"] = pd.to_datetime(df["end_date"], errors="coerce")
     df["procedure_date"] = df.apply(
         lambda x: x["start_date"] if pd.notnull(x["start_date"]) else x["dsstdat"], axis="columns")
     df["procedure_end_date"] = df.apply(
         lambda x: x["end_date"] if pd.notnull(x["end_date"]) else None, axis="columns")
+    if pd.isnull(df["procedure_date"]).any():
+        log.warning("procedures with no dates will be excluded")
+        df = df.loc[pd.notnull(df["procedure_date"])]
     df["procedure_type_concept_id"] = visit_concept_type.concept_id
     df["procedure_concept_id"] = df["variable"].apply(lambda x: getattr(OMOPTreatmentAsProcedure, x, try_strip_postfix(x)))
     df.loc[df["value"].apply(lambda x: isinstance(x, str)), "procedure_source_value"] = df["value"]
@@ -93,7 +93,7 @@ def populate_procedure_treatment(df: pd.DataFrame, postgres: PostgresController)
 def populate_drug_exposure(df: pd.DataFrame, postgres: PostgresController) -> None:
 
     pattern = re.compile("([a-z0-9_]*_cm)(yn|trt|dat|route|end|type)(_(__)?[1-9]([0-9])?)?$")
-    drug_columns = [x for x in df.columns if re.match(pattern, x)]
+    drug_columns = [x for x in df.columns if re.match(pattern, x) or "_dend" in x]
     drug_df = df.copy()[drug_columns + GENERIC_COLUMNS]
 
     core_drug_names = []
@@ -107,7 +107,7 @@ def populate_drug_exposure(df: pd.DataFrame, postgres: PostgresController) -> No
                 lambda x: {"value": x[column],
                            "avail": x.get(f"{core_name}yn{postfix}", "no such column"),
                            "start_date": x.get(f"{core_name}dat{postfix}"),
-                           "end_date": x.get(f"{core_name}end{postfix}"),
+                           "end_date": x.get(f"{core_name.rstrip('_cm')}_2end{postfix.lstrip('_')}"),
                            "route": x.get(f"{core_name}route{postfix}"),
                            "type": x.get(f"{core_name}type{postfix}")
                            },
@@ -123,18 +123,51 @@ def populate_drug_exposure(df: pd.DataFrame, postgres: PostgresController) -> No
     procedure_sub_df = drug_df.loc[drug_df["variable"].apply(
         lambda x: x in OMOPTreatmentAsProcedure.__dict__.keys() or "anti" in x or "other_cm" in x)]
 
-    treatments_to_map = drug_df.loc[drug_df["value"].apply(lambda x: isinstance(x, str)) |
-                                    drug_df["variable"].str.startswith("daily_dop")
+    trts_to_map = drug_df.loc[drug_df["value"].apply(lambda x: isinstance(x, str)) |
+                                    (drug_df["variable"].str.startswith("daily_dop") & 
+                                     (drug_df["value"] == ISARICYesNo.yes))
     ]
-    # for val in sorted(treatments_to_map["value"].apply(lambda x: x.lower()).unique().tolist()):
-    #     print(val)
 
     leftover = drug_df.loc[~(drug_df.index.isin(procedure_sub_df.index) |
-                             drug_df.index.isin(treatments_to_map.index)
-                         )]
+                             drug_df.index.isin(trts_to_map.index)
+                             )]
 
     if not leftover.empty:
         log.warning(f"Mapping for the following variables is not implemented: "
                     f"{', '.join(leftover['variable'].unique().tolist())}")
+
+    trts_to_map.loc[
+        trts_to_map["variable"].str.startswith("daily_dop"), "drug_concept_id"] = OMOPDrugs.dopamine
+    # todo map dose
+    trts_to_map.loc[trts_to_map["value"].apply(lambda x: isinstance(x, str)), "drug_source_value"] = trts_to_map["value"]
+    trts_to_map.loc[trts_to_map["value"].apply(lambda x: isinstance(x, str)), "drug_concept_id"] =(
+        trts_to_map)["value"].apply(lambda x: getattr(OMOPDrugs, str(x).split(" ")[0].lower(), None))
+
+    trts_to_map["dsstdat"] = pd.to_datetime(trts_to_map["dsstdat"], errors="coerce")
+    trts_to_map["start_date"] = pd.to_datetime(trts_to_map["start_date"], errors="coerce")
+    trts_to_map["end_date"] = pd.to_datetime(trts_to_map["end_date"], errors="coerce")
+    trts_to_map["drug_exposure_start_date"] = trts_to_map.apply(
+        lambda x: x["start_date"] if pd.notnull(x["start_date"]) else x["dsstdat"], axis="columns")
+    # todo solve end date properly
+    trts_to_map["drug_exposure_end_date"] = trts_to_map.apply(
+        lambda x: x["end_date"] if pd.notnull(x["end_date"]) else x["dsstdat"], axis="columns")
+
+    if pd.isnull(trts_to_map["drug_exposure_start_date"]).any() or pd.isnull(trts_to_map["drug_exposure_end_date"].any()):
+        log.warning("procedures with no dates will be excluded")
+        trts_to_map = trts_to_map.loc[pd.notnull(trts_to_map["drug_exposure_start_date"]) &
+                                       pd.notnull(trts_to_map["drug_exposure_end_date"])
+        ]
+    
+    trts_to_map["drug_type_concept_id"] = visit_concept_type.concept_id
+
+    trts_to_map = trts_to_map.loc[pd.notnull(trts_to_map["drug_concept_id"]) &
+                                  pd.notnull(trts_to_map["drug_exposure_start_date"])]
+
+    increment_by_index = increment_last_id("drug_exposure", "drug_exposure_id", postgres)
+    trts_to_map.index += increment_by_index
+    trts_to_map.index.name = "drug_exposure_id"
+    trts_to_map.reset_index(drop=False, inplace=True)
+    trts_to_map = trts_to_map.reindex(columns=OMOP_DRUG_EXP_FIELDS)
+    postgres.df_to_postgres(table="drug_exposure", df=trts_to_map)
 
     populate_procedure_treatment(procedure_sub_df, postgres)

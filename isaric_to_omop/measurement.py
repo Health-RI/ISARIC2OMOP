@@ -303,16 +303,19 @@ def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
         log.warning(f"No matching concept for the following measurements: {', '.join(no_concept)}")
     # Set dates
     measurements_df.loc[
-        measurements_df["variable"].str.endswith("_lb"), "measurement_date"] = measurements_df["daily_lbdat"]
+        measurements_df["variable"].str.endswith("_lb"), "measurement_date"] = pd.to_datetime(measurements_df["daily_lbdat"], errors="coerce")
     measurements_df.loc[
-        pd.isnull(measurements_df["measurement_date"]), "measurement_date"] = measurements_df["daily_dsstdat"]
+        pd.isnull(measurements_df["measurement_date"]), "measurement_date"] = pd.to_datetime(measurements_df["daily_dsstdat"], errors="coerce")
     measurements_df.loc[
-        pd.isnull(measurements_df["measurement_date"]), "measurement_date"] = measurements_df["hostdat"]
+        pd.isnull(measurements_df["measurement_date"]), "measurement_date"] = pd.to_datetime(measurements_df["hostdat"], errors="coerce")
     measurements_df.loc[
-        pd.isnull(measurements_df["measurement_date"]), "measurement_date"] = measurements_df["dsstdat"]
+        pd.isnull(measurements_df["measurement_date"]), "measurement_date"] = pd.to_datetime(measurements_df["dsstdat"], errors="coerce")
+    if pd.isnull(measurements_df["measurement_date"]).any():
+        log.warning("measurements with no dates will be excluded")
+        measurements_df = measurements_df.loc[pd.notnull(measurements_df["measurement_date"])]
     measurements_df.rename(columns={
         "value": "value_source_value",
-        "unit": "unit_concept_id"}, inplace=True)
+        "unit": "unit_source_value"}, inplace=True)
     measurements_df["measurement_type_concept_id"] = visit_concept_type.concept_id
 
     measurements_df = measurements_df.loc[pd.notnull(measurements_df["measurement_concept_id"])]

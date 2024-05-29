@@ -103,6 +103,10 @@ def populate_procedure(df, icu_visits, postgres):
     ]
     procedure_df.loc[(procedure_df["variable"] == "daily_other_prtrt"), "procedure_source_value"] = procedure_df["value"]
     procedure_df["procedure_source_value"] = procedure_df["procedure_source_value"].apply(lambda x: check_length(x))
+
+    # todo move to main for all dates columns
+    procedure_df["dsstdat"] = pd.to_datetime(procedure_df["dsstdat"], errors="coerce")
+    procedure_df["hostdat"] = pd.to_datetime(procedure_df["hostdat"], errors="coerce")
     procedure_df["procedure_date"] = procedure_df.apply(
         lambda x: x["hostdat"] if x["variable"].endswith("cmoccur") else x["dsstdat"], axis="columns")
     procedure_df["procedure_type_concept_id"] = visit_concept_type.concept_id

@@ -13,7 +13,11 @@ from drug_exposure import populate_drug_exposure
 
 
 def process_input(path, postgres):
-    data_df = pd.read_csv(path, sep=",")
+    try:
+        data_df = pd.read_csv(path, sep=",")
+    except pd.errors.ParserError:
+        data_df = pd.read_csv(path, sep=";")
+
     if "ethnic" not in data_df.columns:
         data_df["ethnic"] = np.nan
     location_ids_dict = None
@@ -49,4 +53,5 @@ if __name__ == '__main__':
                                   postgres_connection=os.environ["OMOP_DB_CONNECT"],
                                   cdm_schema=os.environ["CDM_SCHEMA"],
                                   vocab_schema=os.environ["VOCAB_SCHEMA"])
-    process_input(path4, postgres)
+    for path in [path1, path2, path3, path4]:
+        process_input(path, postgres)
