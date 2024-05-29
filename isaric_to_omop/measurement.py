@@ -20,63 +20,83 @@ OMOP_MEASUREMENT_HEADER = [
 
 
 class ISARIGlucoseCUnits:
-    mmol_L = 1
-    mg_dL = 2
+    mmol_L = {"name": "mmol/L", "id": 1}
+    mg_dL = {"name": "mg/dL", "id": 2}
+
+
+class ISARISCreatinineUnits:
+    umol_L = {"name": "umol/L", "id": 1}
+    mg_dL = {"name": "mg/dL", "id": 2}
 
 
 class ISARICHbConcentration:
-    gram_per_L = 1
-    gram_per_dL = 2
+    gram_per_L = {"name": "g/L", "id": 1}
+    gram_per_dL = {"name": "g/dL", "id": 2}
 
 
 class OMOPUnits:
-    kg = 9529
-    cm = 8582
-    percent = 8554
+    kg = {"name": "kg", "id": 9529}
+    cm = {"name": "cm", "id": 8582}
+    percent = {"name": "%", "id": 8554}
     # blood cell scounts
-    billion_cells_per_liter = 44777588  # 10^9 per liter
-    billion_L = 9444  # 10^9 per liter
-    thousand_uL = 8848  # 10^3 per microliter
+    billion_cells_per_liter = {"name": "x10^9/L", "id": 44777588}  # 10^9 per liter
+    billion_L = {"name": "x10^9/L", "id": 9444}  # 10^9 per liter
+    thousand_uL = {"name": "x10^3/uL", "id": 8848}  # 10^3 per microliter
     # concentrations
-    umol_L = 8749  # micromole per liter
-    mmol_L = 8753  # millimole per liter
-    mg_dL = 8840  # milligram per decilter
-    ng_ml = 8842  # nanogram per milliliter ng/ml
-    gram_per_L = 8636
-    gram_per_dL = 8713
-    milliequivalent_per_liter = 9557  # mEq/L
-    cells_uL = 8784  # cells per microliter
-    unit_per_liter = 8645
+    umol_L = {"name": "umol/L", "id": 8749}  # micromole per liter
+    mmol_L = {"name": "mmol/L", "id": 8753}  # millimole per liter
+    mg_dL = {"name": "mg/dL", "id": 8840}  # milligram per decilter
+    ng_ml = {"name": "ng/ml", "id": 8842}  # nanogram per milliliter
+    gram_per_L = {"name": "g/L", "id": 8636}
+    gram_per_dL = {"name": "g/dL", "id": 8713}
+    milliequivalent_per_liter = {"name": "mEq/L", "id": 9557}
+    cells_uL = {"name": "cells/uL", "id": 8784}  # cells per microliter
+    unit_per_liter = {"name": "U/L", "id": 8645}
     # temperature
-    celsius = 586323
-    fahrenheit = 9289
+    celsius = {"name": "C", "id": 586323}
+    fahrenheit = {"name": "F", "id": 9289}
     # pressure
-    kPa = 44777602
-    mmHg = 8876
+    kPa = {"name": "kPa", "id": 44777602}
+    mmHg = {"name": "mmHg", "id": 8876}
     # time
-    second = 8555
+    second = {"name": "seconds", "id": 8555}
     # other
-    ml_per_24h = 8930  # mL / 24 hours
+    ml_per_24h = {"name": "mL/24hours", "id": 8930}
+    per_minute = {"name": "per minute", "id": 8541}
+    mg_L = {"name": "mg/L", "id": 8751}
 
 
 class ISARICCellCounts:
-    billion_L = 1  # 10^9 per liter
-    thousand_uL = 2  # 10^3 per microliter
+    billion_L = {"name": "", "id": 1}  # 10^9 per liter
+    thousand_uL = {"name": "", "id": 2}  # 10^3 per microliter
 
 
 class ISARICTemperatureUnits:
-    celsius = 1
-    fahrenheit = 2
+    celsius = {"name": "C", "id": 1}
+    fahrenheit = {"name": "F", "id": 2}
 
 
 class ISARICPressureUnits:
-    kPa = 1
-    mmHg = 2
+    kPa = {"name": "kPa", "id": 1}
+    mmHg = {"name": "mmHg", "id": 2}
 
 
 class ISARICDailyPTINRlbyn:
     pt = 1
     inr = 2
+
+
+class ISARICAVPU:
+    alert = 1
+    verbal = 2
+    pain = 3
+    unresponsive = 4
+
+
+class ISARICSternalCapillary:
+    more_than_2_seconds = 1
+    less_than_2_seconds = 2
+    unknown = 3
 
 
 class OMOPMeasConcept:
@@ -135,7 +155,6 @@ class OMOPMeasConcept:
     daily_aptt_lb = 44809202
     daily_aptr_lb = 4307179
     daily_inr_lb = 4306239
-    daily_crekin_lb = 4275203  # ???
     daily_ferritin_lb = 4176561  # ng/ml
     daily_fibrinogen_lb = 4094436
     stercap_vs = 3043332
@@ -143,17 +162,15 @@ class OMOPMeasConcept:
 
 
 MEAS_OMOP_UNITS_MAPPING = {
-    "temp_vs": {},
-    "daily_temp_vs": {},
-    "hr_vs": {},
-    "daily_hr_vs": {},
-    "rr_vs": {},
-    "daily_rr_vs": {},
-    "sysbp_vs": {},
-    "diabp_vs": {},
+    "hr_vs": OMOPUnits.per_minute,
+    "daily_hr_vs": OMOPUnits.per_minute,
+    "rr_vs": OMOPUnits.per_minute,
+    "daily_rr_vs": OMOPUnits.per_minute,
+    "sysbp_vs": OMOPUnits.mmHg,
+    "diabp_vs": OMOPUnits.mmHg,
     "admission_diabp_vs": OMOPUnits.mmHg,
-    "oxy_vs": {},
-    "daily_oxy_vs": {},
+    "oxy_vs": OMOPUnits.percent,
+    "daily_oxy_vs": OMOPUnits.percent,
     "height_vs": {},
     "weight_vs": {},
     "daily_fi02_lb": OMOPUnits.percent,
@@ -170,43 +187,38 @@ MEAS_OMOP_UNITS_MAPPING = {
     "daily_pt_lb": OMOPUnits.second,
     "daily_alt_lb": OMOPUnits.unit_per_liter,
     "daily_ast_lb": OMOPUnits.unit_per_liter,
-    "daily_ph_lb": {},
-    "avpu_vs": {},
-    "rass_vs": {},
-    "daily_gcs_lb": {},
-    "daily_meanart_lb": {},
-    "daily_plt_lb": {},
-    "daily_glucose_lb": {},
-    "daily_bun_lb": {},
-    "daily_lactate_lb": {},
-    "daily_creat_lb": {},
-    "daily_sodium_lb": {},
-    "daily_potassium_lb": {},
-    "daily_procal_lb": {},
-    "daily_crp_lb": {},
-    "daily_ldh_lb": {},
-    "daily_ddimer_lb": {},
-    "daily_il6_lb": {},
-    "daily_stercap_vs": {},
-    "daily_aptt_lb": {},
-    "daily_aptr_lb": {},
-    "daily_crekin_lb": {},  # ???
-    "daily_ferritin_lb": {},  # ng/ml
-    "daily_fibrinogen_lb": {},
-    "stercap_vs": {},
+    "daily_meanart_lb": OMOPUnits.mmHg,
+    "daily_sodium_lb": OMOPUnits.mmol_L,
+    "daily_potassium_lb": OMOPUnits.mmol_L,
+    "daily_procal_lb": OMOPUnits.ng_ml,
+    "daily_crp_lb": OMOPUnits.mg_L,
+    "daily_ldh_lb": OMOPUnits.unit_per_liter,
+    "daily_ddimer_lb": OMOPUnits.mg_L,
+    "daily_il6_lb": OMOPUnits.mg_L,
+    "daily_ferritin_lb": OMOPUnits.ng_ml,
+  #  "daily_fibrinogen_lb": , - not in http://capacity-covid.eu/wp-content/uploads/CAPACITY-REDCap-2.pdf
     "apvs_weight_vs": {}
 }
 
 MEAS_ISARIC_CODES_UNITS_MAPPING = {
-
+    "temp_vs": ISARICTemperatureUnits,
+    "daily_temp_vs": ISARICTemperatureUnits,
     "daily_pao2_lb": ISARICPressureUnits,
     "daily_pco2_lb": ISARICPressureUnits,
     "daily_bil_lb": ISARIGlucoseCUnits,
     "daily_hb_lb": ISARICHbConcentration,
     "daily_wbc_lb": ISARICCellCounts,
+    "daily_plt_lb": ISARICCellCounts,
+    "daily_glucose_lb": ISARIGlucoseCUnits,
+    "daily_bun_lb": ISARIGlucoseCUnits,
+    "daily_lactate_lb": ISARIGlucoseCUnits,
+    "daily_creat_lb": ISARISCreatinineUnits,
 }
 
-UNITS_NOT_EXPECTED = ["daily_gcs_vs", "daily_inr_lb"]
+UNITS_NOT_EXPECTED = [
+    "daily_gcs_vs", "daily_inr_lb", "daily_ph_lb", "avpu_vs", "rass_vs", "daily_gcs_lb", "stercap_vs",
+    "daily_aptt_lb", "daily_aptr_lb",
+                      ]
 
 
 def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
@@ -250,24 +262,35 @@ def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
     values_df = pd.json_normalize(measurements_df['value'])
     measurements_df.drop(columns="value", inplace=True)
     measurements_df = pd.merge(left=measurements_df, right=values_df, left_index=True, right_index=True)
+    # todo remap PT/INR concepts properly
 
     # filter out laboratory data if daily_lbperf != 1 and measyrement xxx_lbyn != 1
-    if pd.notnull(measurements_df["daily_lbperf"]).all() and pd.notnull(measurements_df["avail"]).all():
+    if pd.isnull(measurements_df["daily_lbperf"]).all() and pd.isnull(measurements_df["avail"]).all():
         logging.warning("Either 'daily_lbperf' is not in the data or empty and/or all xxx_vsyn and xxx_lbyn columns"
                         "are empty, measurements data will be ignored")
-    measurements_df.loc[
-        (measurements_df["variable"].str.endswith("_lb")) &
-        ~(measurements_df["daily_lbperf"].apply(
-            lambda x: int(x) == ISARICYesNo.yes if pd.notnull(x) else False)), "avail"] = None
-    measurements_df = measurements_df.loc[
-        measurements_df["avail"].apply(lambda x: int(x) == ISARICYesNo.yes if pd.notnull(x) else False)]
+    # remove values based on availability filters
+    # todo uncomment for real data:
+    # measurements_df.loc[
+    #     (measurements_df["variable"].str.endswith("_lb")) &
+    #     ~(measurements_df["daily_lbperf"].apply(
+    #         lambda x: int(x) == ISARICYesNo.yes if pd.notnull(x) else False)), "avail"] = None
+    # check_availabitily = [
+    #     re.match(pattern, c).group(1) for c in df.columns if c.endswith("_vsyn") or c.endswith("lbyn")]
+    # measurements_df = measurements_df.loc[~(measurements_df["variable"].isin(check_availabitily)) |
+    #                                       (measurements_df["avail"].apply(lambda x: int(x) == ISARICYesNo.yes if pd.notnull(x) else False))]
 
     measurements_df = measurements_df.loc[pd.notnull(measurements_df["value"])]
+    # remap verbal values
+    measurements_df["value"] = measurements_df.loc[measurements_df["variable"] == "avpu_vs", "value"].apply(
+        lambda x: [key for key, value in ISARICAVPU.__dict__.items() if value == int(x)][0])
+    measurements_df["value"] = measurements_df.loc[measurements_df["variable"] == "stercap_vs", "value"].apply(
+        lambda x: [key.replace("_", " ").capitalize() for key, value in ISARICSternalCapillary.__dict__.items() if pd.notnull(x) and value == int(x)])
+    measurements_df.loc[measurements_df["variable"] == "stercap_vs", "value"] = measurements_df["value"].apply(lambda x: x[0] if pd.notnull(x) else None) 
 
     # todo code for units properly
-    # {'daily_bil_lb', 'daily_bun_lb', 'daily_creat_lb', 'daily_ddimer_lb', 'daily_glucose_lb', 'daily_hb_lb', 
-    # 'daily_lactate_lb', 'daily_lymp_lb', 'daily_neutro_lb', 'daily_plt_lb', 'daily_potassium_lb', 'daily_sodium_lb',
-    # 'daily_wbc_lb', 'oxy_vs'}
+    # unit_concept_id
+    # unit_source_value
+    # unit_source_concept_id
     # measurements_df.loc[measurements_df["variable"] == "oxy_vsorres", "unit"] = OMOPUnits.percent
     # measurements_df.loc[measurements_df["variable"] == "height_vsorres", "unit"] = OMOPUnits.cm
     # measurements_df.loc[measurements_df["variable"] == "weight_vsorres", "unit"] = OMOPUnits.kg
