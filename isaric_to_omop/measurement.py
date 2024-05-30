@@ -221,6 +221,16 @@ UNITS_NOT_EXPECTED = [
                       ]
 
 
+def map_units_from_isaric(variable, value):
+    result = None
+    isaric_name = MEAS_ISARIC_CODES_UNITS_MAPPING.get(variable)
+    if isaric_name:
+        omop_concept_name = [key for key, val in isaric_name.__dict__.items() if isinstance(val, dict) and val["id"] == value]
+        if omop_concept_name:
+            result = getattr(OMOPUnits, omop_concept_name[0], None)
+    return result
+
+
 def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
     general_columns = ["daily_dsstdat", "person_id", "hostdat", "cestdat", "dsstdat", "daily_lbdat"]
     # measurement column name pattern
@@ -287,11 +297,15 @@ def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
         lambda x: [key.replace("_", " ").capitalize() for key, value in ISARICSternalCapillary.__dict__.items() if pd.notnull(x) and value == int(x)])
     measurements_df.loc[measurements_df["variable"] == "stercap_vs", "value"] = measurements_df["value"].apply(lambda x: x[0] if pd.notnull(x) else None) 
 
-    # todo code for units properly
-    # unit_concept_id
-    # unit_source_value
-    # unit_source_concept_id
-    # measurements_df.loc[measurements_df["variable"] == "oxy_vsorres", "unit"] = OMOPUnits.percent
+    measurements_df["unit_info_omop"] = measurements_df["variable"].apply(lambda x: MEAS_OMOP_UNITS_MAPPING.get(x))
+    measurements_df["unit_isaric_info"] = measurements_df.apply(lambda x: map_units_from_isaric(x["variable"], x["value"]), axis="columns")
+    measurements_df["unit_source_value"] = measurements_df["unit_info_omop"].apply(lambda x: x.get("name") if pd.notnull(x) else x)
+    measurements_df.loc[pd.isnull(measurements_df["unit_source_value"]), "unit_source_value"] = measurements_df["unit_isaric_info"].apply(
+        lambda x: x.get("name") if pd.notnull(x) else x)
+    measurements_df["unit_concept_id"] = measurements_df["unit_info_omop"].apply(
+        lambda x: x.get("id") if pd.notnull(x) else x)
+    measurements_df.loc[pd.isnull(measurements_df["unit_concept_id"]), "unit_concept_id"] = measurements_df["unit_isaric_info"].apply(
+        lambda x: x.get("id") if pd.notnull(x) else x)
     # measurements_df.loc[measurements_df["variable"] == "height_vsorres", "unit"] = OMOPUnits.cm
     # measurements_df.loc[measurements_df["variable"] == "weight_vsorres", "unit"] = OMOPUnits.kg
 
@@ -315,7 +329,7 @@ def populate_measurements(df: pd.DataFrame, postgres: PostgresController):
         measurements_df = measurements_df.loc[pd.notnull(measurements_df["measurement_date"])]
     measurements_df.rename(columns={
         "value": "value_source_value",
-        "unit": "unit_source_value"}, inplace=True)
+        "unit": "unit_source_concept_id"}, inplace=True)
     measurements_df["measurement_type_concept_id"] = visit_concept_type.concept_id
 
     measurements_df = measurements_df.loc[pd.notnull(measurements_df["measurement_concept_id"])]
